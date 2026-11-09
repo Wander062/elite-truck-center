@@ -1,91 +1,81 @@
 {% extends "painel/layout.html" %}
-{% block titulo %}Solicitações · Elite Truck Center{% endblock %}
+{% block titulo %}Pedidos · Elite Truck Center{% endblock %}
 {% block painel %}
   <div class="cabecalho-pagina">
     <div>
-      <h1>Solicitações</h1>
+      <h1>Pedidos do pátio</h1>
       <p class="resumo-fila">
         {% if pendentes == 0 %}
-          Nenhuma solicitação pendente na fila.
+          Nenhum pedido esperando lançamento.
         {% elif pendentes == 1 %}
-          1 solicitação pendente na fila.
+          1 pedido esperando lançamento no Premium TSI.
         {% else %}
-          {{ pendentes }} solicitações pendentes na fila.
+          {{ pendentes }} pedidos esperando lançamento no Premium TSI.
         {% endif %}
       </p>
     </div>
   </div>
+  <ol class="passos">
+    <li>Abra o pedido.</li>
+    <li>Confira a placa e as peças.</li>
+    <li>Lance a ordem no Premium TSI.</li>
+    <li>Marque se já lançou.</li>
+  </ol>
   <form class="cartao filtros" method="get" action="{{ url_for('painel.lista') }}">
     <div class="row g-3 align-items-end">
       <div class="col-12 col-md-4">
-        <label class="form-label" for="filtro-placa">Placa</label>
-        <input class="form-control" id="filtro-placa" name="placa" value="{{ filtros.placa }}" autocomplete="off" placeholder="Parte da placa">
+        <label class="form-label" for="filtro-placa">Buscar pela placa</label>
+        <input class="form-control" id="filtro-placa" name="placa" value="{{ filtros.placa }}" autocomplete="off" placeholder="Digite a placa">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label" for="filtro-de">De</label>
+        <label class="form-label" for="filtro-de">Do dia</label>
         <input class="form-control" id="filtro-de" name="de" type="date" value="{{ filtros.de }}">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label" for="filtro-ate">Até</label>
+        <label class="form-label" for="filtro-ate">Até o dia</label>
         <input class="form-control" id="filtro-ate" name="ate" type="date" value="{{ filtros.ate }}">
       </div>
       <div class="col-12 col-md-2">
-        <label class="form-label" for="filtro-status">Status</label>
+        <label class="form-label" for="filtro-status">Situação</label>
         <select class="form-select" id="filtro-status" name="status">
-          <option value="">Todos</option>
+          <option value="">Todas</option>
           {% for valor, rotulo in opcoes_status %}
             <option value="{{ valor }}" {% if filtros.status == valor %}selected{% endif %}>{{ rotulo }}</option>
           {% endfor %}
         </select>
       </div>
       <div class="col-12 col-md-2 d-grid">
-        <button type="submit" class="btn btn-primary">Pesquisar</button>
+        <button type="submit" class="btn btn-primary">Buscar</button>
       </div>
     </div>
     {% if filtros.placa or filtros.de or filtros.ate or filtros.status %}
-      <p class="mb-0 mt-3"><a href="{{ url_for('painel.lista') }}">Limpar filtros</a></p>
+      <p class="mb-0 mt-3"><a href="{{ url_for('painel.lista') }}">Ver todos os pedidos</a></p>
     {% endif %}
   </form>
   {% for mensagem in erros_filtro %}
     <div class="alert alert-danger" role="alert">{{ mensagem }}</div>
   {% endfor %}
   {% if erros_filtro %}
-    <p class="vazio">Ajuste os filtros para ver as solicitações.</p>
+    <p class="vazio">Ajuste a busca para ver os pedidos.</p>
   {% elif paginacao.total == 0 %}
-    <p class="vazio">Nenhuma solicitação encontrada.</p>
+    <p class="vazio">Nenhum pedido encontrado. Quando o pátio enviar, ele aparece aqui.</p>
   {% else %}
-    <div class="cartao cartao-tabela">
-      <div class="table-responsive">
-        <table class="table tabela align-middle mb-0">
-          <thead>
-            <tr>
-              <th scope="col">Solicitação</th>
-              <th scope="col">Data e horário</th>
-              <th scope="col">Placa</th>
-              <th scope="col">Modelo</th>
-              <th scope="col">Responsável</th>
-              <th scope="col">Itens</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for solicitacao in paginacao.items %}
-              <tr>
-                <td><a href="{{ url_for('painel.detalhe', solicitacao_id=solicitacao.id) }}">{{ solicitacao.protocolo }}</a></td>
-                <td>{{ solicitacao.criado_em|data_hora }}</td>
-                <td>{{ solicitacao.placa }}</td>
-                <td title="{{ solicitacao.modelo }}">{{ solicitacao.modelo }}</td>
-                <td title="{{ solicitacao.responsavel_nome }}">{{ solicitacao.responsavel_nome }}</td>
-                <td>{{ contagens.get(solicitacao.id, 0)|contagem }}</td>
-                <td><span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span></td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    <div class="lista-pedidos">
+      {% for solicitacao in paginacao.items %}
+        <a class="pedido" href="{{ url_for('painel.detalhe', solicitacao_id=solicitacao.id) }}">
+          <span class="pedido-topo">
+            <strong class="pedido-placa">{{ solicitacao.placa }}</strong>
+            <span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span>
+          </span>
+          <span class="pedido-linha">{{ solicitacao.protocolo }} · {{ solicitacao.criado_em|data_hora }}</span>
+          <span class="pedido-linha">{{ solicitacao.modelo }} · {{ solicitacao.responsavel_nome }}</span>
+          <span class="pedido-linha">{{ contagens.get(solicitacao.id, 0)|contagem }}</span>
+          <span class="pedido-abrir">Abrir pedido</span>
+        </a>
+      {% endfor %}
     </div>
     {% if paginacao.pages > 1 %}
-      <nav aria-label="Páginas das solicitações">
+      <nav aria-label="Páginas dos pedidos">
         <ul class="pagination">
           {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
             {% if numero %}

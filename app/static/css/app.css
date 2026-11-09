@@ -445,15 +445,83 @@ textarea.form-control { min-height: 120px; }
 
 .status-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
 .btn-status {
-  min-height: 48px;
+  min-height: 64px;
+  min-width: 180px;
   border-radius: 12px;
   border: 1.5px solid #c5d0db;
   background: #fff;
   font-weight: 700;
-  padding: 8px 14px;
+  padding: 10px 14px;
   color: var(--red);
+  text-align: left;
+}
+.btn-status strong,
+.btn-status small { display: block; }
+.btn-status small {
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
 }
 .btn-status.ativo { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-status.ativo small { color: #ffe4e8; }
+
+.passos {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  counter-reset: passo;
+}
+.passos li {
+  counter-increment: passo;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px 10px 46px;
+  position: relative;
+  font-weight: 650;
+}
+.passos li::before {
+  content: counter(passo);
+  position: absolute;
+  left: 10px;
+  top: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.lista-pedidos { display: grid; gap: 12px; }
+.pedido {
+  display: grid;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--red);
+  border-radius: 16px;
+  padding: 14px 16px;
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(22, 50, 74, 0.05);
+}
+.pedido:hover { border-color: var(--red); }
+.pedido-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.pedido-placa { font-size: 1.35rem; letter-spacing: 0.03em; }
+.pedido-linha { color: var(--muted); }
+.pedido-abrir { font-weight: 700; color: var(--red); margin-top: 6px; }
+.voltar { font-weight: 700; }
 
 .historico { list-style: none; padding: 0; margin: 0; }
 .historico li { padding: 10px 0; border-bottom: 1px solid #e7edf2; }

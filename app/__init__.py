@@ -175,7 +175,7 @@ def _registrar_http(app):
             _pagina_erro(
                 400,
                 "Sessão expirada",
-                "Atualize a página e envie os dados novamente. Nada foi gravado em duplicidade.",
+                "Atualize a página e envie de novo. Se estiver entrando no escritório, use o usuário admin, em letras minúsculas, sem espaço na senha.",
             ),
             400,
         )

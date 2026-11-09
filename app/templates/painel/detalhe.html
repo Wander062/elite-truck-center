@@ -1,41 +1,52 @@
 {% extends "painel/layout.html" %}
 {% from "partials/resumo.html" import resumo %}
-{% block titulo %}{{ solicitacao.protocolo }} · Elite Truck Center{% endblock %}
+{% block titulo %}{{ solicitacao.placa }} · Elite Truck Center{% endblock %}
 {% block painel %}
-  <p class="mb-2"><a href="{{ voltar }}">Voltar à lista</a></p>
+  <p class="mb-2"><a class="voltar" href="{{ voltar }}">Voltar aos pedidos</a></p>
   <div class="cabecalho-pagina">
     <div>
       <p class="resumo-fila mb-1">{{ solicitacao.protocolo }}</p>
       <h1>{{ solicitacao.placa }}</h1>
-      <p class="resumo-fila">Recebida em {{ solicitacao.criado_em|data_hora }}
+      <p class="resumo-fila">Chegou em {{ solicitacao.criado_em|data_hora }}
         {% if solicitacao.atualizado_em != solicitacao.criado_em %}
-          · Atualizada em {{ solicitacao.atualizado_em|data_hora }}
+          · Última mudança em {{ solicitacao.atualizado_em|data_hora }}
         {% endif %}
       </p>
     </div>
     <span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span>
   </div>
-  <p class="aviso-sistema">Confira os dados abaixo e lance a ordem de serviço no Premium TSI. Esta solicitação não dá baixa de estoque e não altera o Premium TSI.</p>
+  <ol class="passos">
+    <li>Confira a placa, quem pediu e cada peça.</li>
+    <li>Lance a ordem de serviço no Premium TSI.</li>
+    <li>Marque a situação aqui embaixo.</li>
+  </ol>
+  <p class="aviso-sistema">Este pedido não mexe no estoque e não altera o Premium TSI. O lançamento continua manual.</p>
   {{ resumo(solicitacao) }}
   <section class="cartao">
-    <h2 class="h5">Andamento</h2>
-    <p class="form-text">A alteração pede confirmação e fica registrada com o seu usuário.</p>
+    <h2>O que fazer com este pedido</h2>
+    <p class="form-text">Escolha uma opção. O sistema pede confirmação antes de gravar.</p>
     <div class="status-acoes">
       {% for valor, rotulo in opcoes_status %}
         {% if valor == solicitacao.status %}
-          <button type="button" class="btn-status ativo" disabled aria-current="true">{{ rotulo }}</button>
+          <button type="button" class="btn-status ativo" disabled aria-current="true">
+            <strong>{{ rotulo }}</strong>
+            <small>{% if valor == 'pendente' %}Ainda não lancei{% elif valor == 'em_atendimento' %}Estou lançando agora{% else %}Já lancei no Premium{% endif %}</small>
+          </button>
         {% else %}
           <form method="post" action="{{ url_for('painel.solicitar_status', solicitacao_id=solicitacao.id) }}" data-envio-unico>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="status" value="{{ valor }}">
-            <button type="submit" class="btn-status">{{ rotulo }}</button>
+            <button type="submit" class="btn-status">
+              <strong>{{ rotulo }}</strong>
+              <small>{% if valor == 'pendente' %}Ainda não lancei{% elif valor == 'em_atendimento' %}Estou lançando agora{% else %}Já lancei no Premium{% endif %}</small>
+            </button>
           </form>
         {% endif %}
       {% endfor %}
     </div>
   </section>
   <section class="cartao">
-    <h2 class="h5">Registro de status</h2>
+    <h2>Quem mudou</h2>
     {% if solicitacao.historico %}
       <ol class="historico">
         {% for item in solicitacao.historico %}
@@ -47,7 +58,7 @@
         {% endfor %}
       </ol>
     {% else %}
-      <p class="mb-0">Nenhuma alteração de status até agora.</p>
+      <p class="mb-0">Ninguém mudou este pedido ainda.</p>
     {% endif %}
   </section>
 {% endblock %}

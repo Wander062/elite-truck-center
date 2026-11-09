@@ -7,12 +7,12 @@
       <a class="marca" href="{{ url_for('painel.lista') }}">
         <img src="{{ url_for('static', filename='images/marca.svg') }}" alt="" width="40" height="40">
         <span>
-          <small>Escritório</small>
+          <small>Pedidos do escritório</small>
           <strong>Elite Truck Center</strong>
         </span>
       </a>
       <div class="topo-acoes">
-        <span class="quem">{{ current_user.nome }}</span>
+        <span class="quem">Você: {{ current_user.nome }}</span>
         <form method="post" action="{{ url_for('auth.sair') }}" data-envio-unico>
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-sm btn-light">Sair</button>
@@ -25,7 +25,7 @@
 {% block rodape %}
   <footer class="rodape">
     <div class="topo-inner">
-      <p>Confira a solicitação e lance a ordem de serviço no Premium TSI. Este sistema não altera estoque nem o Premium TSI.</p>
+      <p>Abra o pedido, lance a ordem no Premium TSI e marque a situação. Este sistema não altera o estoque.</p>
     </div>
   </footer>
 {% endblock %}

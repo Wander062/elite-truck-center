@@ -13,8 +13,9 @@ _hash_falso = None
 
 
 def autenticar(identificador, senha):
+    senha = (senha or "").strip()
     if not identificador or not senha or len(senha) > 128:
-        _comparar_senha(None, senha or "")
+        _comparar_senha(None, senha)
         return None
     usuario = db.session.scalar(db.select(Usuario).where(Usuario.usuario == identificador.strip().lower()))
     if not _comparar_senha(usuario, senha):

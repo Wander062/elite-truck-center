@@ -20,7 +20,7 @@ def entrar():
         usuario = autenticar(form.usuario.data, form.senha.data)
         if usuario is None or usuario.perfil not in PERFIS_PAINEL:
             registrar_falha_de_login()
-            flash("Usuário ou senha inválidos.", "erro")
+            flash("Usuário ou senha inválidos. Use admin, em letras minúsculas, e a senha sem espaços.", "erro")
             return render_template("auth/entrar.html", form=form, proximo=proximo)
         session.clear()
         session.permanent = True
