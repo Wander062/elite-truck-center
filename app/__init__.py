@@ -93,18 +93,31 @@ def _criar_admin_inicial(app):
     senha = os.environ.get("ADMIN_SENHA", "")
     if not (nome and usuario and senha):
         return
+    if not 8 <= len(senha) <= 128:
+        app.logger.warning("ADMIN_SENHA ignorada: use entre 8 e 128 caracteres.")
+        return
     from app.erros import DadosInvalidos
+    from app.extensions import db
+    from app.models import Usuario
     from app.services.usuarios import criar_usuario
 
     with app.app_context():
         try:
+            existente = db.session.scalar(
+                db.select(Usuario).where(Usuario.usuario == usuario.strip().lower())
+            )
+            if existente is not None:
+                existente.definir_senha(senha)
+                existente.ativo = True
+                db.session.commit()
+                app.logger.info("Senha do administrador inicial atualizada")
+                return
             criar_usuario(nome, usuario, senha, "administrador")
             app.logger.info("Administrador inicial criado")
         except DadosInvalidos as exc:
-            mensagem = "; ".join(exc.erros.values())
-            if "Já existe" not in mensagem:
-                app.logger.warning("Administrador inicial não criado: %s", mensagem)
+            app.logger.warning("Administrador inicial não criado: %s", "; ".join(exc.erros.values()))
         except Exception:
+            db.session.rollback()
             app.logger.exception("Administrador inicial não criado")
 
 
