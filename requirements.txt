@@ -1,0 +1,13 @@
+Flask>=3.1
+Flask-SQLAlchemy>=3.1
+Flask-Login>=0.6.3
+Flask-WTF>=1.2.2
+Flask-Migrate>=4.1
+WTForms>=3.2
+PyMySQL>=1.1
+psycopg2-binary>=2.9
+gunicorn>=23
+cryptography>=44
+python-dotenv>=1.1
+tzdata>=2025.2
+pytest>=8.3

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/resumo.html" import resumo %}
+{% block titulo %}Solicitação {{ solicitacao.protocolo }} enviada · Elite Truck Center{% endblock %}
+{% block corpo %}pagina-publica{% endblock %}
+{% block topo %}{% include "partials/topo_publico.html" %}{% endblock %}
+{% block rodape %}{% include "partials/rodape_publico.html" %}{% endblock %}
+{% block conteudo %}
+  <article class="cartao-sucesso">
+    <p class="selo selo-concluida">Enviada ao escritório</p>
+    <h1>Solicitação registrada</h1>
+    <p class="protocolo" id="protocolo">{{ solicitacao.protocolo }}</p>
+    <p>Recebida em {{ solicitacao.criado_em|data_hora }}. Anote o número ou informe a placa <strong>{{ solicitacao.placa }}</strong> ao escritório.</p>
+    <p>Isto não é a ordem de serviço do Premium TSI. O funcionário do escritório confere os dados e faz o lançamento.</p>
+    <div class="acoes-sucesso no-print">
+      <button type="button" class="btn btn-outline-secondary js-somente" data-copiar="{{ solicitacao.protocolo }}">Copiar número</button>
+      <button type="button" class="btn btn-outline-secondary js-somente" data-imprimir>Imprimir</button>
+      <a class="btn btn-primary" href="{{ url_for('publico.formulario') }}">Nova solicitação</a>
+    </div>
+  </article>
+  {{ resumo(solicitacao) }}
+  <p class="intro">Se precisar corrigir alguma informação, envie uma nova solicitação e avise o escritório qual número deve ser desconsiderado.</p>
+{% endblock %}

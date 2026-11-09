@@ -1,0 +1,53 @@
+{% extends "painel/layout.html" %}
+{% from "partials/resumo.html" import resumo %}
+{% block titulo %}{{ solicitacao.protocolo }} · Elite Truck Center{% endblock %}
+{% block painel %}
+  <p class="mb-2"><a href="{{ voltar }}">Voltar à lista</a></p>
+  <div class="cabecalho-pagina">
+    <div>
+      <p class="resumo-fila mb-1">{{ solicitacao.protocolo }}</p>
+      <h1>{{ solicitacao.placa }}</h1>
+      <p class="resumo-fila">Recebida em {{ solicitacao.criado_em|data_hora }}
+        {% if solicitacao.atualizado_em != solicitacao.criado_em %}
+          · Atualizada em {{ solicitacao.atualizado_em|data_hora }}
+        {% endif %}
+      </p>
+    </div>
+    <span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span>
+  </div>
+  <p class="aviso-sistema">Confira os dados abaixo e lance a ordem de serviço no Premium TSI. Esta solicitação não dá baixa de estoque e não altera o Premium TSI.</p>
+  {{ resumo(solicitacao) }}
+  <section class="cartao">
+    <h2 class="h5">Andamento</h2>
+    <p class="form-text">A alteração pede confirmação e fica registrada com o seu usuário.</p>
+    <div class="status-acoes">
+      {% for valor, rotulo in opcoes_status %}
+        {% if valor == solicitacao.status %}
+          <button type="button" class="btn-status ativo" disabled aria-current="true">{{ rotulo }}</button>
+        {% else %}
+          <form method="post" action="{{ url_for('painel.solicitar_status', solicitacao_id=solicitacao.id) }}" data-envio-unico>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="status" value="{{ valor }}">
+            <button type="submit" class="btn-status">{{ rotulo }}</button>
+          </form>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </section>
+  <section class="cartao">
+    <h2 class="h5">Registro de status</h2>
+    {% if solicitacao.historico %}
+      <ol class="historico">
+        {% for item in solicitacao.historico %}
+          <li>
+            <strong>{{ item.criado_em|data_hora }}</strong>
+            · {{ item.usuario.nome }}
+            · {{ item.status_anterior|rotulo_status }} → {{ item.status_novo|rotulo_status }}
+          </li>
+        {% endfor %}
+      </ol>
+    {% else %}
+      <p class="mb-0">Nenhuma alteração de status até agora.</p>
+    {% endif %}
+  </section>
+{% endblock %}

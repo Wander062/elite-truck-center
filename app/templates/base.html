@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c41230">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block titulo %}Elite Truck Center{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/marca.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="sem-js {% block corpo %}{% endblock %}">
+  <a class="pular" href="#conteudo">Ir para o conteúdo</a>
+  {% block topo %}{% endblock %}
+  <main id="conteudo" class="{% block classe_miolo %}miolo{% endblock %}">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+        <div class="mensagens" aria-live="polite">
+          {% for categoria, texto in mensagens %}
+            <div class="alert {{ 'alert-danger' if categoria == 'erro' else 'alert-warning' if categoria == 'aviso' else 'alert-success' }}" role="status">{{ texto }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block conteudo %}{% endblock %}
+  </main>
+  {% block rodape %}{% endblock %}
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

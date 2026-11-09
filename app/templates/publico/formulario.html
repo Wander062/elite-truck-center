@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% macro campos_peca(item, erros_linha) %}
+  <div class="peca" data-peca>
+    <div class="peca-topo">
+      <h3 class="peca-titulo">Peça</h3>
+      <button type="button" class="btn-remover js-somente" data-remover>Remover</button>
+    </div>
+    <div class="mb-3">
+      <label class="d-block">
+        <span class="form-label">Descrição da peça</span>
+        <input class="form-control form-control-lg{% if erros_linha.get('descricao') %} is-invalid{% endif %}" name="item_descricao" value="{{ item.descricao }}" maxlength="200" autocomplete="off">
+      </label>
+      {% if erros_linha.get('descricao') %}<p class="erro-campo">{{ erros_linha.descricao }}</p>{% endif %}
+    </div>
+    <div class="row g-3">
+      <div class="col-6">
+        <label class="d-block">
+          <span class="form-label">Quantidade</span>
+          <input class="form-control form-control-lg{% if erros_linha.get('quantidade') %} is-invalid{% endif %}" name="item_quantidade" value="{{ item.quantidade }}" inputmode="decimal" maxlength="9" autocomplete="off">
+        </label>
+        {% if erros_linha.get('quantidade') %}<p class="erro-campo">{{ erros_linha.quantidade }}</p>{% endif %}
+      </div>
+      <div class="col-6">
+        <label class="d-block">
+          <span class="form-label">Unidade</span>
+          <select class="form-select form-select-lg{% if erros_linha.get('unidade') %} is-invalid{% endif %}" name="item_unidade">
+            {% for valor, rotulo in opcoes_unidade %}
+              <option value="{{ valor }}" {% if item.unidade == valor %}selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        {% if erros_linha.get('unidade') %}<p class="erro-campo">{{ erros_linha.unidade }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="mt-3">
+      <label class="d-block">
+        <span class="form-label">Observação da peça</span>
+        <input class="form-control form-control-lg{% if erros_linha.get('observacao') %} is-invalid{% endif %}" name="item_observacao" value="{{ item.observacao }}" maxlength="500" autocomplete="off">
+      </label>
+      {% if erros_linha.get('observacao') %}<p class="erro-campo">{{ erros_linha.observacao }}</p>{% endif %}
+    </div>
+  </div>
+{% endmacro %}
+{% block titulo %}Nova solicitação · Elite Truck Center{% endblock %}
+{% block corpo %}pagina-publica{% endblock %}
+{% block topo %}{% include "partials/topo_publico.html" %}{% endblock %}
+{% block rodape %}{% include "partials/rodape_publico.html" %}{% endblock %}
+{% block conteudo %}
+  <p class="intro">Informe o veículo e as peças. A data e o horário são registrados automaticamente. O escritório usa estes dados para lançar a ordem de serviço no Premium TSI.</p>
+  {% if erros %}
+    <div class="alert alert-danger" role="alert">
+      <strong>Corrija os campos indicados antes de continuar.</strong>
+      <ul class="mb-0 mt-2">
+        {% for campo, mensagem in erros.items() if campo != "itens_linhas" %}
+          <li>{{ mensagem }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  <form id="formulario-solicitacao" method="post" action="{{ url_for('publico.formulario') }}" data-envio-unico>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="chave_envio" value="{{ dados.chave_envio }}">
+
+    <section class="bloco" aria-labelledby="titulo-veiculo">
+      <div class="bloco-titulo">
+        <span class="indice">1</span>
+        <div>
+          <h2 id="titulo-veiculo">Veículo</h2>
+          <p>Dados para localizar o caminhão ou ônibus.</p>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="placa">Placa ou identificação</label>
+        <input class="form-control form-control-lg{% if erros.get('placa') %} is-invalid{% endif %}" id="placa" name="placa" value="{{ dados.placa }}" maxlength="30" required autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC1D23" {% if erros.get('placa') %}aria-invalid="true" aria-describedby="erro-placa"{% else %}aria-describedby="ajuda-placa"{% endif %}>
+        {% if erros.get('placa') %}
+          <p class="erro-campo" id="erro-placa">{{ erros.placa }}</p>
+        {% endif %}
+        <p class="form-text" id="ajuda-placa">Placa antiga (ABC-1234) ou Mercosul (ABC1D23). Se não houver placa nesse padrão, marque a opção abaixo.</p>
+        <label class="check">
+          <input type="checkbox" id="placa_fora_padrao" name="placa_fora_padrao" value="1" {% if dados.placa_fora_padrao %}checked{% endif %}>
+          <span>Este veículo não usa placa no padrão brasileiro</span>
+        </label>
+      </div>
+      <fieldset class="mb-3">
+        <legend class="form-label">Tipo de veículo</legend>
+        <div class="grade-tipo">
+          {% for valor, rotulo in tipos_veiculo %}
+            <label class="opcao-tipo">
+              <input type="radio" name="tipo_veiculo" value="{{ valor }}" {% if dados.tipo_veiculo == valor %}checked{% endif %} {% if loop.first %}required{% endif %}>
+              <span>{{ rotulo }}</span>
+            </label>
+          {% endfor %}
+        </div>
+        {% if erros.get('tipo_veiculo') %}
+          <p class="erro-campo">{{ erros.tipo_veiculo }}</p>
+        {% endif %}
+      </fieldset>
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="marca">Marca</label>
+          <input class="form-control form-control-lg{% if erros.get('marca') %} is-invalid{% endif %}" id="marca" name="marca" value="{{ dados.marca }}" maxlength="80" required autocomplete="off">
+          {% if erros.get('marca') %}<p class="erro-campo">{{ erros.marca }}</p>{% endif %}
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label" for="modelo">Modelo</label>
+          <input class="form-control form-control-lg{% if erros.get('modelo') %} is-invalid{% endif %}" id="modelo" name="modelo" value="{{ dados.modelo }}" maxlength="80" required autocomplete="off">
+          {% if erros.get('modelo') %}<p class="erro-campo">{{ erros.modelo }}</p>{% endif %}
+        </div>
+      </div>
+      <div class="mt-3">
+        <label class="form-label" for="identificacao_adicional">Identificação adicional</label>
+        <input class="form-control form-control-lg{% if erros.get('identificacao_adicional') %} is-invalid{% endif %}" id="identificacao_adicional" name="identificacao_adicional" value="{{ dados.identificacao_adicional }}" maxlength="120" autocomplete="off" placeholder="Frota, chassi curto ou outro código, se houver">
+        {% if erros.get('identificacao_adicional') %}<p class="erro-campo">{{ erros.identificacao_adicional }}</p>{% endif %}
+      </div>
+    </section>
+
+    <section class="bloco" aria-labelledby="titulo-responsavel">
+      <div class="bloco-titulo">
+        <span class="indice">2</span>
+        <div>
+          <h2 id="titulo-responsavel">Responsável</h2>
+          <p>Quem está preenchendo. O horário do envio fica gravado no servidor.</p>
+        </div>
+      </div>
+      <label class="form-label" for="responsavel_nome">Nome</label>
+      <input class="form-control form-control-lg{% if erros.get('responsavel_nome') %} is-invalid{% endif %}" id="responsavel_nome" name="responsavel_nome" value="{{ dados.responsavel_nome }}" maxlength="120" required autocomplete="name">
+      {% if erros.get('responsavel_nome') %}<p class="erro-campo">{{ erros.responsavel_nome }}</p>{% endif %}
+    </section>
+
+    <section class="bloco" aria-labelledby="titulo-pecas">
+      <div class="bloco-titulo">
+        <span class="indice">3</span>
+        <div>
+          <h2 id="titulo-pecas">Peças</h2>
+          <p>Inclua cada item pedido para este veículo.</p>
+        </div>
+      </div>
+      {% if erros.get('itens') %}
+        <p class="erro-campo" role="alert">{{ erros.itens }}</p>
+      {% endif %}
+      <div id="pecas">
+        {% for item in dados.itens %}
+          {% set erros_linha = erros.get('itens_linhas', {}).get(loop.index0, {}) %}
+          {{ campos_peca(item, erros_linha) }}
+        {% endfor %}
+      </div>
+      <button type="button" id="adicionar-peca" class="btn-adicionar js-somente">Adicionar peça</button>
+      <p id="limite-pecas" class="form-text" hidden>Limite de 30 peças por solicitação.</p>
+      <noscript>
+        <p class="alert alert-warning mt-3">Para incluir várias peças nesta mesma solicitação, ative o JavaScript do navegador.</p>
+      </noscript>
+    </section>
+
+    <section class="bloco" aria-labelledby="titulo-observacoes">
+      <div class="bloco-titulo">
+        <span class="indice">4</span>
+        <div>
+          <h2 id="titulo-observacoes">Observações</h2>
+          <p>Informações que valem para a solicitação inteira. Opcional.</p>
+        </div>
+      </div>
+      <label class="visually-hidden" for="observacoes_gerais">Observações gerais</label>
+      <textarea class="form-control{% if erros.get('observacoes_gerais') %} is-invalid{% endif %}" id="observacoes_gerais" name="observacoes_gerais" rows="4" maxlength="2000">{{ dados.observacoes_gerais }}</textarea>
+      {% if erros.get('observacoes_gerais') %}<p class="erro-campo">{{ erros.observacoes_gerais }}</p>{% endif %}
+    </section>
+
+    <div class="barra-envio">
+      <button type="submit" class="btn btn-primary btn-lg btn-enviar" id="enviar" data-aguarde="Enviando...">Continuar para revisão</button>
+    </div>
+  </form>
+  <template id="modelo-peca">
+    {{ campos_peca({"descricao": "", "quantidade": "1", "unidade": "UN", "observacao": ""}, {}) }}
+  </template>
+{% endblock %}
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/formulario.js') }}"></script>
+{% endblock %}

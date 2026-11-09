@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block corpo %}pagina-painel{% endblock %}
+{% block classe_miolo %}miolo miolo-largo{% endblock %}
+{% block topo %}
+  <header class="topo">
+    <div class="topo-inner topo-painel">
+      <a class="marca" href="{{ url_for('painel.lista') }}">
+        <img src="{{ url_for('static', filename='images/marca.svg') }}" alt="" width="40" height="40">
+        <span>
+          <small>Escritório</small>
+          <strong>Elite Truck Center</strong>
+        </span>
+      </a>
+      <div class="topo-acoes">
+        <span class="quem">{{ current_user.nome }}</span>
+        <form method="post" action="{{ url_for('auth.sair') }}" data-envio-unico>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-sm btn-light">Sair</button>
+        </form>
+      </div>
+    </div>
+  </header>
+{% endblock %}
+{% block conteudo %}{% block painel %}{% endblock %}{% endblock %}
+{% block rodape %}
+  <footer class="rodape">
+    <div class="topo-inner">
+      <p>Confira a solicitação e lance a ordem de serviço no Premium TSI. Este sistema não altera estoque nem o Premium TSI.</p>
+    </div>
+  </footer>
+{% endblock %}

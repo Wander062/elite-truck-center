@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar · Elite Truck Center{% endblock %}
+{% block corpo %}pagina-publica{% endblock %}
+{% block topo %}{% include "partials/topo_publico.html" %}{% endblock %}
+{% block rodape %}{% include "partials/rodape_publico.html" %}{% endblock %}
+{% block conteudo %}
+  <article class="login-cartao">
+    <h1>Acesso do escritório</h1>
+    <p class="intro">Consulte as solicitações recebidas e atualize o andamento. O lançamento no Premium TSI continua manual.</p>
+    <form method="post" action="{{ url_for('auth.entrar', next=proximo) if proximo else url_for('auth.entrar') }}" data-envio-unico novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.usuario.label(class="form-label") }}
+        {{ form.usuario(class="form-control form-control-lg" ~ (" is-invalid" if form.usuario.errors else ""), autocomplete="username", autocapitalize="none", spellcheck="false") }}
+        {% for erro in form.usuario.errors %}
+          <p class="erro-campo">{{ erro }}</p>
+        {% endfor %}
+      </div>
+      <div class="mb-3">
+        {{ form.senha.label(class="form-label") }}
+        {{ form.senha(class="form-control form-control-lg" ~ (" is-invalid" if form.senha.errors else ""), autocomplete="current-password") }}
+        {% for erro in form.senha.errors %}
+          <p class="erro-campo">{{ erro }}</p>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg btn-enviar" data-aguarde="Entrando...">Entrar</button>
+    </form>
+  </article>
+{% endblock %}

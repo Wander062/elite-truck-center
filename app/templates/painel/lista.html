@@ -1,0 +1,103 @@
+{% extends "painel/layout.html" %}
+{% block titulo %}Solicitações · Elite Truck Center{% endblock %}
+{% block painel %}
+  <div class="cabecalho-pagina">
+    <div>
+      <h1>Solicitações</h1>
+      <p class="resumo-fila">
+        {% if pendentes == 0 %}
+          Nenhuma solicitação pendente na fila.
+        {% elif pendentes == 1 %}
+          1 solicitação pendente na fila.
+        {% else %}
+          {{ pendentes }} solicitações pendentes na fila.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+  <form class="cartao filtros" method="get" action="{{ url_for('painel.lista') }}">
+    <div class="row g-3 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="filtro-placa">Placa</label>
+        <input class="form-control" id="filtro-placa" name="placa" value="{{ filtros.placa }}" autocomplete="off" placeholder="Parte da placa">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="filtro-de">De</label>
+        <input class="form-control" id="filtro-de" name="de" type="date" value="{{ filtros.de }}">
+      </div>
+      <div class="col-6 col-md-2">
+        <label class="form-label" for="filtro-ate">Até</label>
+        <input class="form-control" id="filtro-ate" name="ate" type="date" value="{{ filtros.ate }}">
+      </div>
+      <div class="col-12 col-md-2">
+        <label class="form-label" for="filtro-status">Status</label>
+        <select class="form-select" id="filtro-status" name="status">
+          <option value="">Todos</option>
+          {% for valor, rotulo in opcoes_status %}
+            <option value="{{ valor }}" {% if filtros.status == valor %}selected{% endif %}>{{ rotulo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <button type="submit" class="btn btn-primary">Pesquisar</button>
+      </div>
+    </div>
+    {% if filtros.placa or filtros.de or filtros.ate or filtros.status %}
+      <p class="mb-0 mt-3"><a href="{{ url_for('painel.lista') }}">Limpar filtros</a></p>
+    {% endif %}
+  </form>
+  {% for mensagem in erros_filtro %}
+    <div class="alert alert-danger" role="alert">{{ mensagem }}</div>
+  {% endfor %}
+  {% if erros_filtro %}
+    <p class="vazio">Ajuste os filtros para ver as solicitações.</p>
+  {% elif paginacao.total == 0 %}
+    <p class="vazio">Nenhuma solicitação encontrada.</p>
+  {% else %}
+    <div class="cartao cartao-tabela">
+      <div class="table-responsive">
+        <table class="table tabela align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Solicitação</th>
+              <th scope="col">Data e horário</th>
+              <th scope="col">Placa</th>
+              <th scope="col">Modelo</th>
+              <th scope="col">Responsável</th>
+              <th scope="col">Itens</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for solicitacao in paginacao.items %}
+              <tr>
+                <td><a href="{{ url_for('painel.detalhe', solicitacao_id=solicitacao.id) }}">{{ solicitacao.protocolo }}</a></td>
+                <td>{{ solicitacao.criado_em|data_hora }}</td>
+                <td>{{ solicitacao.placa }}</td>
+                <td title="{{ solicitacao.modelo }}">{{ solicitacao.modelo }}</td>
+                <td title="{{ solicitacao.responsavel_nome }}">{{ solicitacao.responsavel_nome }}</td>
+                <td>{{ contagens.get(solicitacao.id, 0)|contagem }}</td>
+                <td><span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% if paginacao.pages > 1 %}
+      <nav aria-label="Páginas das solicitações">
+        <ul class="pagination">
+          {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+            {% if numero %}
+              <li class="page-item {% if numero == paginacao.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('painel.lista', pagina=numero, placa=filtros.placa, de=filtros.de, ate=filtros.ate, status=filtros.status) }}">{{ numero }}</a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% endif %}
+{% endblock %}
