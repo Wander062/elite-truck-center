@@ -10,8 +10,12 @@
   var placa = document.getElementById("placa");
   var foraPadrao = document.getElementById("placa_fora_padrao");
   var ajuda = document.getElementById("ajuda-placa");
+  var extra = document.getElementById("identificacao-extra");
+  var nome = document.getElementById("responsavel_nome");
+  var nomes = document.getElementById("nomes-frequentes");
   var limite = document.getElementById("limite-pecas");
   var maximo = 30;
+  var chaveNomes = "elite-truck-nomes";
 
   function linhas() {
     return Array.prototype.slice.call(lista.querySelectorAll("[data-peca]"));
@@ -27,6 +31,12 @@
       }
       if (remover) {
         remover.textContent = todas.length === 1 ? "Limpar" : "Remover";
+      }
+    });
+    todas.forEach(function (linha) {
+      var duplicar = linha.querySelector("[data-duplicar]");
+      if (duplicar) {
+        duplicar.disabled = todas.length >= maximo;
       }
     });
     if (adicionar) {
@@ -64,6 +74,21 @@
   }
 
   lista.addEventListener("click", function (event) {
+    var duplicar = event.target.closest("[data-duplicar]");
+    if (duplicar) {
+      var origem = duplicar.closest("[data-peca]");
+      if (!origem || linhas().length >= maximo) {
+        return;
+      }
+      var copia = origem.cloneNode(true);
+      origem.after(copia);
+      numerar();
+      var campo = copia.querySelector("[name='item_descricao']");
+      if (campo) {
+        campo.focus();
+      }
+      return;
+    }
     var botao = event.target.closest("[data-remover]");
     if (!botao) {
       return;
@@ -97,6 +122,11 @@
     if (!placa || !foraPadrao) {
       return;
     }
+    if (extra) {
+      var campoExtra = extra.querySelector("[name='identificacao_adicional']");
+      var temExtra = campoExtra && campoExtra.value.trim() !== "";
+      extra.hidden = !foraPadrao.checked && !temExtra;
+    }
     if (foraPadrao.checked) {
       placa.maxLength = 30;
       placa.placeholder = "Ex.: FROTA 12";
@@ -126,6 +156,48 @@
   if (foraPadrao) {
     foraPadrao.addEventListener("change", atualizarModoPlaca);
   }
+  function lerNomes() {
+    try {
+      var guardados = JSON.parse(window.localStorage.getItem(chaveNomes) || "[]");
+      return Array.isArray(guardados) ? guardados : [];
+    } catch (erro) {
+      return [];
+    }
+  }
+
+  function mostrarNomes() {
+    if (!nomes) {
+      return;
+    }
+    nomes.innerHTML = "";
+    lerNomes().forEach(function (item) {
+      var opcao = document.createElement("option");
+      opcao.value = item;
+      nomes.appendChild(opcao);
+    });
+  }
+
+  function guardarNome() {
+    if (!nome || !window.localStorage) {
+      return;
+    }
+    var texto = nome.value.trim();
+    if (texto.length < 3) {
+      return;
+    }
+    var atuais = lerNomes().filter(function (item) {
+      return String(item).toLowerCase() !== texto.toLowerCase();
+    });
+    atuais.unshift(texto);
+    window.localStorage.setItem(chaveNomes, JSON.stringify(atuais.slice(0, 8)));
+    mostrarNomes();
+  }
+
+  if (nome) {
+    mostrarNomes();
+    nome.addEventListener("change", guardarNome);
+  }
+  form.addEventListener("submit", guardarNome);
   atualizarModoPlaca();
   numerar();
 })();

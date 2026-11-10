@@ -86,6 +86,12 @@ def test_pesquisa_por_placa_periodo_e_status(client, app, cliente_escritorio):
     assert "XYZ9X99" in concluidas
     assert "ABC1D23" not in concluidas
 
+    with app.app_context():
+        numero = db.session.get(Solicitacao, segunda_id).protocolo
+    por_numero = _html(client.get("/painel/?placa=" + numero))
+    assert "XYZ9X99" in por_numero
+    assert "ABC1D23" not in por_numero
+
 
 def test_alteracao_de_status_so_grava_depois_da_confirmacao(client, app, cliente_escritorio, conta_escritorio):
     from uuid import uuid4

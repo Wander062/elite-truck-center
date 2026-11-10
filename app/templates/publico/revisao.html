@@ -5,15 +5,21 @@
 {% block topo %}{% include "partials/topo_publico.html" %}{% endblock %}
 {% block rodape %}{% include "partials/rodape_publico.html" %}{% endblock %}
 {% block conteudo %}
+  <nav class="etapas" aria-label="Etapas da solicitação">
+    <span>1. Veículo</span>
+    <span>2. Quem</span>
+    <span>3. Peças</span>
+    <span class="etapa-ativa">4. Revisão</span>
+  </nav>
   <h1>Confira antes de enviar</h1>
-  <p class="intro">Se algo estiver errado, volte e corrija. Depois de enviar, o escritório recebe exatamente estes dados.</p>
+  <p class="intro">Veja o veículo, quem pediu e cada peça. Se algo estiver errado, volte e corrija. Depois de enviar, o escritório recebe exatamente estes dados.</p>
   {{ resumo(dados) }}
   <form method="post" action="{{ url_for('publico.confirmar') }}" data-envio-unico>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-primary btn-lg btn-enviar" data-aguarde="Enviando...">Enviar solicitação</button>
   </form>
-  <p class="acoes-secundarias no-print">
-    <a href="{{ url_for('publico.formulario', editar=1) }}">Corrigir dados</a>
+  <div class="acoes-secundarias no-print">
+    <a class="btn btn-outline-secondary btn-lg" href="{{ url_for('publico.formulario', editar=1) }}">Corrigir dados</a>
     <a href="{{ url_for('publico.formulario') }}">Descartar e começar de novo</a>
-  </p>
+  </div>
 {% endblock %}

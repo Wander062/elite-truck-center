@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 
 from flask import current_app
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -88,7 +88,12 @@ def consultar_solicitacoes(placa, inicio_utc, fim_exclusivo_utc, status, pagina)
         coluna = func.upper(Solicitacao.placa)
         for caractere in ("-", " ", ".", "/"):
             coluna = func.replace(coluna, caractere, "")
-        consulta = consulta.where(coluna.contains(termo))
+        condicao = coluna.contains(termo)
+        if re.fullmatch(r"SOL\d+", termo) or re.fullmatch(r"\d+", termo):
+            numero = int(re.sub(r"\D", "", termo) or "0")
+            if 1 <= numero <= 1_000_000_000:
+                condicao = or_(condicao, Solicitacao.id == numero)
+        consulta = consulta.where(condicao)
     if status:
         consulta = consulta.where(Solicitacao.status == status)
     if inicio_utc is not None:

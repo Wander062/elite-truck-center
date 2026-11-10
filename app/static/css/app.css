@@ -244,6 +244,41 @@ textarea.form-control { min-height: 120px; }
   gap: 8px;
 }
 
+.peca-acoes { display: flex; gap: 4px; align-items: center; }
+
+.btn-duplicar {
+  background: transparent;
+  border: 0;
+  color: var(--red);
+  font-weight: 700;
+  min-height: 44px;
+  padding: 8px;
+}
+
+.etapas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.etapas a,
+.etapas span {
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.etapas .etapa-ativa,
+.etapas a:focus-visible {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
 .peca-titulo { font-size: 1rem; margin: 0; }
 
 .btn-remover {
