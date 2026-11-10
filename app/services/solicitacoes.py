@@ -81,7 +81,7 @@ def obter_solicitacao(solicitacao_id):
     ).first()
 
 
-def consultar_solicitacoes(placa, inicio_utc, fim_exclusivo_utc, status, pagina):
+def consultar_solicitacoes(placa, inicio_utc, fim_exclusivo_utc, status, pagina, excluir_intervalo=None):
     consulta = db.select(Solicitacao)
     termo = re.sub(r"[^A-Z0-9]", "", (placa or "").upper())
     if termo:
@@ -100,6 +100,11 @@ def consultar_solicitacoes(placa, inicio_utc, fim_exclusivo_utc, status, pagina)
         consulta = consulta.where(Solicitacao.criado_em >= inicio_utc)
     if fim_exclusivo_utc is not None:
         consulta = consulta.where(Solicitacao.criado_em < fim_exclusivo_utc)
+    if excluir_intervalo is not None:
+        excluir_inicio, excluir_fim = excluir_intervalo
+        consulta = consulta.where(
+            or_(Solicitacao.criado_em < excluir_inicio, Solicitacao.criado_em >= excluir_fim)
+        )
     consulta = consulta.order_by(Solicitacao.criado_em.desc(), Solicitacao.id.desc())
     return db.paginate(consulta, page=max(int(pagina or 1), 1), per_page=POR_PAGINA, error_out=False)
 
@@ -115,13 +120,88 @@ def contar_itens(identificadores):
     return {solicitacao_id: total for solicitacao_id, total in linhas}
 
 
-def contar_pendentes():
+def contar_pendentes(inicio_utc=None, fim_exclusivo_utc=None):
     from app.constants import STATUS_PENDENTE
 
+    consulta = db.select(func.count(Solicitacao.id)).where(Solicitacao.status == STATUS_PENDENTE)
+    if inicio_utc is not None:
+        consulta = consulta.where(Solicitacao.criado_em >= inicio_utc)
+    if fim_exclusivo_utc is not None:
+        consulta = consulta.where(Solicitacao.criado_em < fim_exclusivo_utc)
+    total = db.session.scalar(consulta)
+    return int(total or 0)
+
+
+def versao_da_solicitacao(solicitacao):
+    momento = solicitacao.atualizado_em
+    if momento is None:
+        return ""
+    return momento.strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+
+def contar_fora_do_intervalo(inicio_utc, fim_exclusivo_utc):
     total = db.session.scalar(
-        db.select(func.count(Solicitacao.id)).where(Solicitacao.status == STATUS_PENDENTE)
+        db.select(func.count(Solicitacao.id)).where(
+            or_(Solicitacao.criado_em < inicio_utc, Solicitacao.criado_em >= fim_exclusivo_utc)
+        )
     )
     return int(total or 0)
+
+
+def formulario_da_solicitacao(solicitacao):
+    from app.formatacao import formatar_quantidade
+
+    return {
+        "placa": solicitacao.placa,
+        "placa_fora_padrao": bool(solicitacao.placa_fora_padrao),
+        "tipo_veiculo": solicitacao.tipo_veiculo,
+        "marca": solicitacao.marca,
+        "modelo": solicitacao.modelo,
+        "identificacao_adicional": solicitacao.identificacao_adicional or "",
+        "responsavel_nome": solicitacao.responsavel_nome,
+        "observacoes_gerais": solicitacao.observacoes_gerais or "",
+        "itens": [
+            {
+                "descricao": item.descricao,
+                "quantidade": formatar_quantidade(item.quantidade).replace("—", ""),
+                "unidade": item.unidade or "",
+                "observacao": item.observacao or "",
+            }
+            for item in solicitacao.itens
+        ],
+    }
+
+
+def atualizar_solicitacao(solicitacao, dados, versao):
+    from app.erros import DadosInvalidos
+
+    if versao_da_solicitacao(solicitacao) != (versao or ""):
+        raise DadosInvalidos({
+            "versao": "Este pedido mudou desde que você abriu. Nada foi salvo, para não apagar o que já estava gravado.",
+        })
+    payload = dict(dados or {})
+    payload["chave_envio"] = solicitacao.chave_envio
+    limpos = validar_solicitacao(payload)
+    solicitacao.placa = limpos["placa"]
+    solicitacao.placa_fora_padrao = limpos["placa_fora_padrao"]
+    solicitacao.tipo_veiculo = limpos["tipo_veiculo"]
+    solicitacao.marca = limpos["marca"]
+    solicitacao.modelo = limpos["modelo"]
+    solicitacao.identificacao_adicional = limpos["identificacao_adicional"] or None
+    solicitacao.responsavel_nome = limpos["responsavel_nome"]
+    solicitacao.observacoes_gerais = limpos["observacoes_gerais"] or None
+    solicitacao.atualizado_em = agora_utc()
+    solicitacao.itens = [
+        ItemSolicitacao(
+            descricao=item["descricao"],
+            quantidade=Decimal(item["quantidade"]),
+            unidade=item["unidade"] or None,
+            observacao=item["observacao"] or None,
+        )
+        for item in limpos["itens"]
+    ]
+    db.session.commit()
+    return solicitacao
 
 
 def alterar_status(solicitacao, novo_status, usuario):

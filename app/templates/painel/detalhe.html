@@ -2,7 +2,10 @@
 {% from "partials/resumo.html" import resumo %}
 {% block titulo %}{{ solicitacao.placa }} · Elite Truck Center{% endblock %}
 {% block painel %}
-  <p class="mb-2"><a class="voltar" href="{{ voltar }}">Voltar aos pedidos</a></p>
+  <p class="mb-2 acoes-secundarias">
+    <a class="voltar" href="{{ voltar }}">Voltar</a>
+    <a class="btn btn-primary" href="{{ url_for('painel.editar', solicitacao_id=solicitacao.id) }}">Corrigir este pedido</a>
+  </p>
   <div class="cabecalho-pagina">
     <div>
       <p class="resumo-fila mb-1">{{ solicitacao.protocolo }}</p>
@@ -15,22 +18,14 @@
     </div>
     <span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span>
   </div>
-  <ol class="passos">
-    <li>Confira a placa, quem pediu e cada peça.</li>
-    <li>Lance a ordem de serviço no Premium TSI.</li>
-    <li>Marque a situação aqui embaixo.</li>
-  </ol>
-  <p class="aviso-sistema">Este pedido não mexe no estoque e não altera o Premium TSI. O lançamento continua manual.</p>
   {{ resumo(solicitacao) }}
   <section class="cartao">
-    <h2>O que fazer com este pedido</h2>
-    <p class="form-text">Escolha uma opção. O sistema pede confirmação antes de gravar.</p>
+    <h2>Situação</h2>
     <div class="status-acoes">
       {% for valor, rotulo in opcoes_status %}
         {% if valor == solicitacao.status %}
           <button type="button" class="btn-status ativo" disabled aria-current="true">
             <strong>{{ rotulo }}</strong>
-            <small>{% if valor == 'pendente' %}Ainda não lancei{% elif valor == 'em_atendimento' %}Estou lançando agora{% else %}Já lancei no Premium{% endif %}</small>
           </button>
         {% else %}
           <form method="post" action="{{ url_for('painel.solicitar_status', solicitacao_id=solicitacao.id) }}" data-envio-unico>
@@ -38,7 +33,6 @@
             <input type="hidden" name="status" value="{{ valor }}">
             <button type="submit" class="btn-status">
               <strong>{{ rotulo }}</strong>
-              <small>{% if valor == 'pendente' %}Ainda não lancei{% elif valor == 'em_atendimento' %}Estou lançando agora{% else %}Já lancei no Premium{% endif %}</small>
             </button>
           </form>
         {% endif %}

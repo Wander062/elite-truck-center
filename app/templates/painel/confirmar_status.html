@@ -4,15 +4,6 @@
   <article class="cartao">
     <h1>Confirmar a mudança</h1>
     <p>O pedido <strong>{{ solicitacao.protocolo }}</strong>, placa <strong>{{ solicitacao.placa }}</strong>, vai sair de <strong>{{ solicitacao.status|rotulo_status }}</strong> e ficar <strong>{{ status_novo|rotulo_status }}</strong>.</p>
-    <p class="intro">
-      {% if status_novo == 'pendente' %}
-        Isso significa que ainda não foi lançado no Premium TSI.
-      {% elif status_novo == 'em_atendimento' %}
-        Isso significa que você está lançando agora no Premium TSI.
-      {% else %}
-        Isso significa que a ordem já foi lançada no Premium TSI.
-      {% endif %}
-    </p>
     <form method="post" action="{{ url_for('painel.aplicar_status', solicitacao_id=solicitacao.id) }}" data-envio-unico>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-primary btn-lg btn-enviar" data-aguarde="Salvando...">Sim, confirmar</button>

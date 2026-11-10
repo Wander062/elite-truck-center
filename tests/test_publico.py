@@ -33,7 +33,7 @@ def test_envio_com_varias_pecas_fica_gravado(client, app):
     assert "Filtro de óleo" in html
     assert "2,5" in html
     assert "Barulho no freio dianteiro" in html
-    assert "Premium TSI" in html
+    assert "Solicitação registrada" in html
 
     with app.app_context():
         solicitacoes = db.session.scalars(db.select(Solicitacao)).all()

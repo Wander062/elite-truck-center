@@ -8,12 +8,17 @@ from app.models import Usuario
 from app.seguranca import referencia_da_lista, requer_painel
 from app.services.solicitacoes import (
     alterar_status,
+    atualizar_solicitacao,
     consultar_solicitacoes,
+    contar_fora_do_intervalo,
     contar_itens,
     contar_pendentes,
+    formulario_da_solicitacao,
     obter_solicitacao,
+    versao_da_solicitacao,
 )
-from app.tempo import interpretar_periodo
+from app.tempo import interpretar_periodo, limites_hoje
+from app.validacao import dados_publicos_do_formulario
 
 bp = Blueprint("painel", __name__, url_prefix="/painel")
 CHAVE_MUDANCA = "mudanca_status"
@@ -35,20 +40,39 @@ def lista():
     status_filtro = status if status in STATUS_VALIDOS else ""
     if status and status not in STATUS_VALIDOS:
         erros_filtro.append("Status inválido.")
+    historico = request.args.get("historico") == "1"
+    pesquisando = bool((placa or "").strip() or (de_texto or "").strip() or (ate_texto or "").strip() or status)
+    if pesquisando:
+        modo = "busca"
+    elif historico:
+        modo = "historico"
+    else:
+        modo = "hoje"
+    intervalo_hoje = limites_hoje()
+    excluir = None
+    if not erros_filtro and modo == "hoje":
+        inicio, fim = intervalo_hoje
+    elif not erros_filtro and modo == "historico":
+        inicio, fim = None, None
+        excluir = intervalo_hoje
 
     paginacao = None
     contagens = {}
     if not erros_filtro:
-        paginacao = consultar_solicitacoes(placa, inicio, fim, status_filtro or None, pagina)
+        paginacao = consultar_solicitacoes(
+            placa, inicio, fim, status_filtro or None, pagina, excluir_intervalo=excluir
+        )
         contagens = contar_itens([item.id for item in paginacao.items])
 
     return render_template(
         "painel/lista.html",
         paginacao=paginacao,
         contagens=contagens,
-        pendentes=contar_pendentes(),
+        pendentes=contar_pendentes(*intervalo_hoje) if modo == "hoje" else None,
+        guardados=contar_fora_do_intervalo(*intervalo_hoje) if modo == "hoje" else None,
         erros_filtro=erros_filtro,
-        filtros={"placa": placa, "de": de_texto, "ate": ate_texto, "status": status},
+        modo=modo,
+        filtros={"placa": placa, "de": de_texto, "ate": ate_texto, "status": status, "historico": historico},
     )
 
 
@@ -63,6 +87,41 @@ def detalhe(solicitacao_id):
         solicitacao=solicitacao,
         voltar=referencia_da_lista(request.referrer, request.host) or url_for("painel.lista"),
     )
+
+
+@bp.route("/solicitacoes/<int:solicitacao_id>/editar", methods=["GET", "POST"])
+@requer_painel
+def editar(solicitacao_id):
+    solicitacao = obter_solicitacao(solicitacao_id)
+    if solicitacao is None:
+        abort(404)
+    if request.method == "GET":
+        return render_template(
+            "painel/editar.html",
+            solicitacao=solicitacao,
+            dados=formulario_da_solicitacao(solicitacao),
+            erros={},
+            versao=versao_da_solicitacao(solicitacao),
+        )
+    if (request.form.get("pedido_id") or "").strip() != str(solicitacao.id):
+        flash("A correção não foi salva. Abra o pedido de novo para não misturar com outro.", "erro")
+        return redirect(url_for("painel.detalhe", solicitacao_id=solicitacao_id))
+    dados = dados_publicos_do_formulario(request.form)
+    try:
+        atualizar_solicitacao(solicitacao, dados, request.form.get("versao"))
+    except DadosInvalidos as exc:
+        if "versao" in exc.erros:
+            flash(exc.erros["versao"], "erro")
+            return redirect(url_for("painel.detalhe", solicitacao_id=solicitacao_id))
+        return render_template(
+            "painel/editar.html",
+            solicitacao=solicitacao,
+            dados=dados,
+            erros=exc.erros,
+            versao=versao_da_solicitacao(solicitacao),
+        ), 400
+    flash(f"Pedido {solicitacao.protocolo} corrigido. Os outros pedidos não foram alterados.", "ok")
+    return redirect(url_for("painel.detalhe", solicitacao_id=solicitacao_id))
 
 
 @bp.post("/solicitacoes/<int:solicitacao_id>/status")

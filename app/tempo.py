@@ -25,6 +25,16 @@ def _ler_data(texto):
         return None, False
 
 
+def limites_hoje():
+    hoje = datetime.now(FUSO_OFICINA).date()
+    inicio = datetime.combine(hoje, time.min, tzinfo=FUSO_OFICINA)
+    fim = inicio + timedelta(days=1)
+    return (
+        inicio.astimezone(timezone.utc).replace(tzinfo=None),
+        fim.astimezone(timezone.utc).replace(tzinfo=None),
+    )
+
+
 def interpretar_periodo(de_texto, ate_texto):
     erros = []
     inicio, de_ok = _ler_data(de_texto)

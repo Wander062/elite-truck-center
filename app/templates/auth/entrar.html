@@ -6,8 +6,7 @@
 {% block conteudo %}
   <article class="login-cartao">
     <h1>Entrar no escritório</h1>
-    <p class="intro">Aqui ficam os pedidos que o pátio enviou. Depois de entrar, abra o pedido, confira as peças e lance no Premium TSI.</p>
-    <p class="aviso-sistema">Usuário: <strong>admin</strong>. Digite a senha em letras minúsculas, sem espaço no começo ou no fim.</p>
+    <p class="intro">Usuário: <strong>admin</strong></p>
     <form method="post" action="{{ url_for('auth.entrar', next=proximo) if proximo else url_for('auth.entrar') }}" data-envio-unico novalidate>
       {{ form.hidden_tag() }}
       <div class="mb-3">

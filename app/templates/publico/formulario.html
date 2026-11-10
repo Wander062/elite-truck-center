@@ -49,7 +49,7 @@
 {% block topo %}{% include "partials/topo_publico.html" %}{% endblock %}
 {% block rodape %}{% include "partials/rodape_publico.html" %}{% endblock %}
 {% block conteudo %}
-  <p class="intro">Informe o veículo e as peças. A data e o horário são registrados automaticamente. O escritório usa estes dados para lançar a ordem de serviço no Premium TSI.</p>
+  <p class="intro">Informe o veículo e as peças.</p>
   <nav class="etapas" aria-label="Etapas da solicitação">
     <a href="#titulo-veiculo">1. Veículo</a>
     <a href="#titulo-responsavel">2. Quem</a>
@@ -75,7 +75,6 @@
         <span class="indice">1</span>
         <div>
           <h2 id="titulo-veiculo">Veículo</h2>
-          <p>Dados para localizar o caminhão ou ônibus.</p>
         </div>
       </div>
       <div class="mb-3">
@@ -119,7 +118,6 @@
       <div class="mt-3" id="identificacao-extra" {% if not dados.placa_fora_padrao and not dados.identificacao_adicional %}hidden{% endif %}>
         <label class="form-label" for="identificacao_adicional">Identificação alternativa</label>
         <input class="form-control form-control-lg{% if erros.get('identificacao_adicional') %} is-invalid{% endif %}" id="identificacao_adicional" name="identificacao_adicional" value="{{ dados.identificacao_adicional }}" maxlength="120" autocomplete="off" placeholder="Frota, chassi curto ou outro código">
-        <p class="form-text">Use só se a placa não bastar para achar o veículo.</p>
         {% if erros.get('identificacao_adicional') %}<p class="erro-campo">{{ erros.identificacao_adicional }}</p>{% endif %}
       </div>
     </section>
@@ -129,13 +127,11 @@
         <span class="indice">2</span>
         <div>
           <h2 id="titulo-responsavel">Responsável</h2>
-          <p>Quem está preenchendo. O horário do envio fica gravado no servidor.</p>
         </div>
       </div>
       <label class="form-label" for="responsavel_nome">Nome</label>
       <input class="form-control form-control-lg{% if erros.get('responsavel_nome') %} is-invalid{% endif %}" id="responsavel_nome" name="responsavel_nome" value="{{ dados.responsavel_nome }}" maxlength="120" required autocomplete="name" list="nomes-frequentes">
       <datalist id="nomes-frequentes"></datalist>
-      <p class="form-text">Neste celular, os nomes já usados aparecem como sugestão. Eles não saem deste aparelho.</p>
       {% if erros.get('responsavel_nome') %}<p class="erro-campo">{{ erros.responsavel_nome }}</p>{% endif %}
     </section>
 
@@ -144,7 +140,6 @@
         <span class="indice">3</span>
         <div>
           <h2 id="titulo-pecas">Peças</h2>
-          <p>Inclua cada item pedido para este veículo.</p>
         </div>
       </div>
       {% if erros.get('itens') %}
@@ -168,7 +163,6 @@
         <span class="indice">4</span>
         <div>
           <h2 id="titulo-observacoes">Observações</h2>
-          <p>Informações que valem para a solicitação inteira. Opcional.</p>
         </div>
       </div>
       <label class="visually-hidden" for="observacoes_gerais">Observações gerais</label>

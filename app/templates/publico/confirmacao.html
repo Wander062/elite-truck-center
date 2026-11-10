@@ -9,8 +9,7 @@
     <p class="selo selo-concluida">Enviada ao escritório</p>
     <h1>Solicitação registrada</h1>
     <p class="protocolo" id="protocolo">{{ solicitacao.protocolo }}</p>
-    <p>Recebida em {{ solicitacao.criado_em|data_hora }}. Anote o número ou informe a placa <strong>{{ solicitacao.placa }}</strong> ao escritório.</p>
-    <p>Isto não é a ordem de serviço do Premium TSI. O funcionário do escritório confere os dados e faz o lançamento.</p>
+    <p>Recebida em {{ solicitacao.criado_em|data_hora }}. Informe o número ou a placa <strong>{{ solicitacao.placa }}</strong> ao escritório.</p>
     <div class="acoes-sucesso no-print">
       <button type="button" class="btn btn-outline-secondary js-somente" data-copiar="{{ solicitacao.protocolo }}">Copiar número</button>
       <button type="button" class="btn btn-outline-secondary js-somente" data-imprimir>Imprimir</button>
@@ -18,5 +17,4 @@
     </div>
   </article>
   {{ resumo(solicitacao) }}
-  <p class="intro">Se precisar corrigir alguma informação, envie uma nova solicitação e avise o escritório qual número deve ser desconsiderado.</p>
 {% endblock %}

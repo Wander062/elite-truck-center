@@ -21,11 +21,10 @@
     </div>
   </header>
 {% endblock %}
-{% block conteudo %}{% block painel %}{% endblock %}{% endblock %}
-{% block rodape %}
-  <footer class="rodape">
-    <div class="topo-inner">
-      <p>Abra o pedido, lance a ordem no Premium TSI e marque a situação. Este sistema não altera o estoque.</p>
-    </div>
-  </footer>
+{% block conteudo %}
+  <nav class="atalhos-painel" aria-label="Onde ver os pedidos">
+    <a href="{{ url_for('painel.lista') }}" {% if request.endpoint == 'painel.lista' and request.args.get('historico') != '1' and not request.args.get('placa') and not request.args.get('de') and not request.args.get('ate') and not request.args.get('status') %}class="ativo"{% endif %}>Hoje</a>
+    <a href="{{ url_for('painel.lista', historico=1) }}" {% if request.args.get('historico') == '1' %}class="ativo"{% endif %}>Histórico</a>
+  </nav>
+  {% block painel %}{% endblock %}
 {% endblock %}

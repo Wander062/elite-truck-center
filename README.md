@@ -1,8 +1,6 @@
 # Solicitação de peças
 
-Aplicação web para a oficina de caminhões e ônibus substituir o formulário de papel. O responsável preenche a solicitação no celular. O escritório consulta os dados no computador e lança a ordem de serviço no Premium TSI.
-
-O sistema **não** substitui o Premium TSI, **não** integra com ele e **não** dá baixa de estoque.
+Aplicação web para a oficina de caminhões e ônibus substituir o formulário de papel. O responsável preenche a solicitação no celular. O escritório consulta e corrige os pedidos no computador.
 
 ## Tecnologias
 
@@ -20,7 +18,7 @@ O sistema **não** substitui o Premium TSI, **não** integra com ele e **não** 
 - O protocolo exibido é `SOL-000001`, gerado a partir do identificador da solicitação.
 - O envio passa por uma revisão. Uma chave única impede que o mesmo envio seja gravado duas vezes.
 - Data e hora são gravadas em UTC e mostradas no fuso `America/Sao_Paulo`.
-- Uma solicitação enviada não pode ser editada. Correção se faz com um novo envio, avisando o escritório.
+- O escritório pode corrigir um pedido depois de aberto. O número do pedido não muda.
 
 ## Pré-requisitos
 
@@ -127,7 +125,7 @@ Sem essa variável, o teste de MySQL aparece como ignorado.
 1. O responsável abre o formulário, informa veículo, nome e peças e segue para a revisão.
 2. Confere os dados e envia. A tela mostra o protocolo `SOL-000001`.
 3. No escritório, entre no painel, pesquise pela placa ou pelo período e abra a solicitação.
-4. Confira peça por peça e lance a ordem de serviço no Premium TSI.
+4. Confira as peças e, se precisar, corrija o pedido.
 5. Altere o status (Pendente, Em atendimento ou Concluída). A mudança só grava depois da confirmação.
 
 ## Estrutura

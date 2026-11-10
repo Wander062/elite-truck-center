@@ -3,25 +3,35 @@
 {% block painel %}
   <div class="cabecalho-pagina">
     <div>
-      <h1>Pedidos do pátio</h1>
-      <p class="resumo-fila">
-        {% if pendentes == 0 %}
-          Nenhum pedido esperando lançamento.
-        {% elif pendentes == 1 %}
-          1 pedido esperando lançamento no Premium TSI.
-        {% else %}
-          {{ pendentes }} pedidos esperando lançamento no Premium TSI.
-        {% endif %}
-      </p>
+      {% if modo == "historico" %}
+        <h1>Histórico de pedidos</h1>
+        <p class="resumo-fila">Pedidos dos dias anteriores.</p>
+      {% elif modo == "busca" %}
+        <h1>Resultado da busca</h1>
+        <p class="resumo-fila">A busca encontra pedidos de qualquer dia. Sem filtro, a tela mostra só os de hoje.</p>
+      {% else %}
+        <h1>Pedidos de hoje</h1>
+        <p class="resumo-fila">
+          {% if pendentes == 0 %}
+            Nenhum pedido de hoje esperando lançamento.
+          {% elif pendentes == 1 %}
+            1 pedido de hoje em aberto.
+          {% else %}
+            {{ pendentes }} pedidos de hoje em aberto.
+          {% endif %}
+          {% if guardados == 0 %}
+            Nenhum pedido de outro dia ficou de fora.
+          {% elif guardados == 1 %}
+            1 pedido de outro dia está guardado no Histórico e não se mistura com os de hoje.
+          {% else %}
+            {{ guardados }} pedidos de outros dias estão guardados no Histórico e não se misturam com os de hoje.
+          {% endif %}
+        </p>
+      {% endif %}
     </div>
   </div>
-  <ol class="passos">
-    <li>Abra o pedido.</li>
-    <li>Confira a placa e as peças.</li>
-    <li>Lance a ordem no Premium TSI.</li>
-    <li>Marque se já lançou.</li>
-  </ol>
   <form class="cartao filtros" method="get" action="{{ url_for('painel.lista') }}">
+    {% if filtros.historico %}<input type="hidden" name="historico" value="1">{% endif %}
     <div class="row g-3 align-items-end">
       <div class="col-12 col-md-4">
         <label class="form-label" for="filtro-placa">Buscar pela placa ou pelo número</label>
@@ -49,7 +59,13 @@
       </div>
     </div>
     {% if filtros.placa or filtros.de or filtros.ate or filtros.status %}
-      <p class="mb-0 mt-3"><a href="{{ url_for('painel.lista') }}">Ver todos os pedidos</a></p>
+      <p class="mb-0 mt-3">
+        {% if filtros.historico %}
+          <a href="{{ url_for('painel.lista', historico=1) }}">Limpar a busca do histórico</a>
+        {% else %}
+          <a href="{{ url_for('painel.lista') }}">Voltar para os pedidos de hoje</a>
+        {% endif %}
+      </p>
     {% endif %}
   </form>
   {% for mensagem in erros_filtro %}
@@ -58,7 +74,15 @@
   {% if erros_filtro %}
     <p class="vazio">Ajuste a busca para ver os pedidos.</p>
   {% elif paginacao.total == 0 %}
-    <p class="vazio">Nenhum pedido encontrado. Quando o pátio enviar, ele aparece aqui.</p>
+    <p class="vazio">
+      {% if modo == "hoje" %}
+        Nenhum pedido chegou hoje. Use o Histórico para ver os dias anteriores.
+      {% elif modo == "historico" %}
+        Nenhum pedido de dias anteriores.
+      {% else %}
+        Nenhum pedido encontrado com essa busca. Limpe a busca para ver os pedidos gravados.
+      {% endif %}
+    </p>
   {% else %}
     <div class="lista-pedidos">
       {% for solicitacao in paginacao.items %}
@@ -80,7 +104,7 @@
           {% for numero in paginacao.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
             {% if numero %}
               <li class="page-item {% if numero == paginacao.page %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('painel.lista', pagina=numero, placa=filtros.placa, de=filtros.de, ate=filtros.ate, status=filtros.status) }}">{{ numero }}</a>
+                <a class="page-link" href="{{ url_for('painel.lista', pagina=numero, placa=filtros.placa, de=filtros.de, ate=filtros.ate, status=filtros.status, historico=1 if filtros.historico else None) }}">{{ numero }}</a>
               </li>
             {% else %}
               <li class="page-item disabled"><span class="page-link">…</span></li>

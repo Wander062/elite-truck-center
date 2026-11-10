@@ -558,6 +558,26 @@ textarea.form-control { min-height: 120px; }
 .pedido-abrir { font-weight: 700; color: var(--red); margin-top: 6px; }
 .voltar { font-weight: 700; }
 
+.atalhos-painel {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+.atalhos-painel a {
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+.atalhos-painel a.ativo {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
 .historico { list-style: none; padding: 0; margin: 0; }
 .historico li { padding: 10px 0; border-bottom: 1px solid #e7edf2; }
 
@@ -574,6 +594,32 @@ textarea.form-control { min-height: 120px; }
 }
 
 .sem-js .js-somente { display: none !important; }
+
+html { overflow-x: clip; }
+body { overflow-wrap: break-word; }
+img, svg { max-width: 100%; }
+.form-control, .form-select, textarea { max-width: 100%; }
+.topo-painel, .topo-acoes, .pedido-topo, .cabecalho-pagina, .peca-topo, .peca-acoes, .pagination { flex-wrap: wrap; }
+.marca, .topo-acoes, .pedido { min-width: 0; }
+.quem { line-height: 1.2; }
+.status-acoes form { flex: 1 1 100%; min-width: 0; }
+.btn-status { width: 100%; min-width: 0; min-height: 48px; text-align: center; }
+
+@media (max-width: 699px) {
+  .topo-inner, .miolo, .miolo-largo { width: min(1120px, calc(100% - 20px)); }
+  .miolo { margin: 16px auto 28px; }
+  .cartao, .bloco, .login-cartao, .cartao-sucesso { padding: 16px 14px; }
+  .marca { padding: 10px 0; }
+  .marca strong { font-size: 1rem; line-height: 1.2; }
+  .acoes-secundarias, .acoes-sucesso { flex-direction: column; align-items: stretch; }
+  .acoes-secundarias .btn, .acoes-sucesso .btn, .btn-enviar { width: 100%; }
+  h1 { font-size: 1.35rem; }
+}
+
+@media (min-width: 700px) {
+  .status-acoes form { flex: 1 1 180px; }
+  .btn-status { width: auto; min-width: 180px; }
+}
 
 @media print {
   .no-print, .topo, .rodape, .barra-envio, .js-somente { display: none !important; }
