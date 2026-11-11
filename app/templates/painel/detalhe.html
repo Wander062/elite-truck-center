@@ -19,6 +19,12 @@
     <span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span>
   </div>
   {{ resumo(solicitacao) }}
+  {% if solicitacao.status == 'em_atendimento' %}
+    <p class="aviso-sistema">Esta ordem já está em lançamento.</p>
+  {% endif %}
+  {% if solicitacao.numero_ordem %}
+    <p class="aviso-sistema">Número da ordem: {{ solicitacao.numero_ordem }}</p>
+  {% endif %}
   <section class="cartao">
     <h2>Situação</h2>
     <div class="status-acoes">

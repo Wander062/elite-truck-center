@@ -138,7 +138,7 @@ textarea.form-control { min-height: 120px; }
 .bloco {
   background: #fff;
   border: 1px solid var(--line);
-  border-left: 5px solid var(--amber);
+  border-left: 5px solid var(--red);
   border-radius: 18px;
   padding: 18px 16px 16px;
   margin-bottom: 16px;
@@ -164,7 +164,7 @@ textarea.form-control { min-height: 120px; }
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--amber);
+  background: var(--red);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -175,12 +175,8 @@ textarea.form-control { min-height: 120px; }
 
 .grade-tipo {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-}
-
-@media (min-width: 640px) {
-  .grade-tipo { grid-template-columns: repeat(3, 1fr); }
 }
 
 .opcao-tipo { display: block; position: relative; margin: 0; }
@@ -205,9 +201,9 @@ textarea.form-control { min-height: 120px; }
 }
 
 .opcao-tipo input:checked + span {
-  border-color: var(--amber);
-  background: #fff6ef;
-  box-shadow: inset 0 0 0 1px var(--amber);
+  border-color: var(--red);
+  background: #fff5f6;
+  box-shadow: inset 0 0 0 1px var(--red);
 }
 
 .opcao-tipo input:focus-visible + span {
@@ -232,10 +228,14 @@ textarea.form-control { min-height: 120px; }
 .peca {
   background: #f7f9fb;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
 }
+
+.peca .mb-3 { margin-bottom: 8px !important; }
+.peca .mt-3 { margin-top: 8px !important; }
+.peca-descricao { font-weight: 700; }
 
 .peca-topo {
   display: flex;
@@ -278,6 +278,161 @@ textarea.form-control { min-height: 120px; }
   border-color: var(--red);
   color: #fff;
 }
+
+.progresso {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.progresso button,
+.progresso span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 6px 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.15;
+  text-align: center;
+  cursor: pointer;
+}
+
+.progresso .atual,
+.progresso button[aria-current="step"] {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+
+.progresso .feita {
+  background: #fff5f6;
+  border-color: #f0c2ca;
+  color: var(--red);
+}
+
+.trilha {
+  height: 4px;
+  background: #e1e7ee;
+  border-radius: 99px;
+  margin: 0 0 14px;
+  overflow: hidden;
+}
+
+.trilha span {
+  display: block;
+  height: 100%;
+  width: 25%;
+  background: var(--red);
+}
+
+body:not(.sem-js) .com-passos [data-etapa] { display: none; }
+body:not(.sem-js) .com-passos [data-etapa].ativa { display: block; }
+body:not(.sem-js) .com-passos .barra-envio { display: none; }
+
+.barra-passos {
+  position: fixed;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 8px;
+  width: min(760px, 100%);
+  margin: 0 auto;
+  background: #fff;
+  border-top: 1px solid var(--line);
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 16px rgba(22, 50, 74, 0.06);
+}
+
+.barra-passos .btn { flex: 1; min-height: 48px; font-weight: 700; }
+
+body:not(.sem-js) .pagina-publica .miolo:has(.com-passos) {
+  padding-bottom: 92px;
+}
+
+.contagem-pecas {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.sugestoes-pecas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.sugestao-peca {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  min-height: 36px;
+  padding: 4px 10px;
+  font-weight: 700;
+}
+
+.observacao-geral { margin-top: 14px; }
+
+.correcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.correcoes a {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--red);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.sucesso-icone {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5f6ee;
+  color: #146c43;
+  font-size: 1.7rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.protocolo-rotulo {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ficha-curta { margin: 12px 0 16px; }
+.resumo-bloco + .resumo-bloco {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.resumo-nome { margin: 0; font-size: 1.1rem; font-weight: 700; }
+.pedido-protocolo { font-weight: 700; color: var(--red); letter-spacing: 0.03em; }
 
 .peca-titulo { font-size: 1rem; margin: 0; }
 
@@ -622,7 +777,12 @@ img, svg { max-width: 100%; }
 }
 
 @media print {
-  .no-print, .topo, .rodape, .barra-envio, .js-somente { display: none !important; }
+  .no-print, .topo, .rodape, .barra-envio, .barra-passos, .js-somente { display: none !important; }
   body { background: #fff; }
   .cartao, .cartao-sucesso, .bloco { box-shadow: none; }
+  .com-passos [data-etapa] { display: block !important; }
+}
+
+@media (max-width: 699px) {
+  .form-control, .form-select, .form-control-lg, .form-select-lg { font-size: 16px; }
 }

@@ -6,6 +6,14 @@
     <p>O pedido <strong>{{ solicitacao.protocolo }}</strong>, placa <strong>{{ solicitacao.placa }}</strong>, vai sair de <strong>{{ solicitacao.status|rotulo_status }}</strong> e ficar <strong>{{ status_novo|rotulo_status }}</strong>.</p>
     <form method="post" action="{{ url_for('painel.aplicar_status', solicitacao_id=solicitacao.id) }}" data-envio-unico>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if status_novo == 'concluida' %}
+        <div class="mb-3">
+          <label class="form-label" for="numero_ordem">Número da ordem</label>
+          <input class="form-control form-control-lg" id="numero_ordem" name="numero_ordem" value="{{ numero_informado or '' }}" maxlength="40" required autocomplete="off">
+          <p class="form-text">Número gerado no outro sistema.</p>
+          {% if erro_numero %}<p class="erro-campo">{{ erro_numero }}</p>{% endif %}
+        </div>
+      {% endif %}
       <button type="submit" class="btn btn-primary btn-lg btn-enviar" data-aguarde="Salvando...">Sim, confirmar</button>
     </form>
     <form method="post" action="{{ url_for('painel.cancelar_status', solicitacao_id=solicitacao.id) }}" class="mt-3">

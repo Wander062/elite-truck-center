@@ -371,6 +371,78 @@ def test_escritorio_corrige_o_pedido_sem_perder_o_protocolo(client, app, cliente
         assert [item.descricao for item in atual.itens] == ["Filtro de ar"]
 
 
+def test_concluir_pede_o_numero_gerado_no_outro_sistema(client, app, cliente_escritorio):
+    with app.app_context():
+        solicitacao_id = criar_solicitacao(solicitacao_limpa(chave_envio=str(uuid4()))).id
+
+    detalhe = _html(client.get(f"/painel/solicitacoes/{solicitacao_id}"))
+    pedido = client.post(
+        f"/painel/solicitacoes/{solicitacao_id}/status",
+        data={"csrf_token": extrair_csrf(detalhe), "status": "concluida"},
+    )
+    confirmacao = client.get(pedido.headers["Location"])
+    html = _html(confirmacao)
+    assert "Número da ordem" in html
+    sem_numero = client.post(
+        f"/painel/solicitacoes/{solicitacao_id}/status/confirmar",
+        data={"csrf_token": extrair_csrf(html), "numero_ordem": " "},
+    )
+    assert sem_numero.status_code == 400
+    assert "Informe o número gerado no outro sistema." in _html(sem_numero)
+    with app.app_context():
+        assert db.session.get(Solicitacao, solicitacao_id).status == "pendente"
+
+    aplicado = client.post(
+        f"/painel/solicitacoes/{solicitacao_id}/status/confirmar",
+        data={"csrf_token": extrair_csrf(html), "numero_ordem": "OS-4491"},
+        follow_redirects=True,
+    )
+    corpo = _html(aplicado)
+    assert "OS-4491" in corpo
+    assert "Concluída" in corpo
+    assert "já está em lançamento" not in corpo
+    with app.app_context():
+        atual = db.session.get(Solicitacao, solicitacao_id)
+        assert atual.status == "concluida"
+        assert atual.numero_ordem == "OS-4491"
+
+
+def test_quem_abre_para_corrigir_ve_que_ja_esta_em_lancamento(client, app, cliente_escritorio, conta_escritorio):
+    with app.app_context():
+        solicitacao = criar_solicitacao(solicitacao_limpa(chave_envio=str(uuid4())))
+        solicitacao.status = "em_atendimento"
+        usuario = db.session.scalar(db.select(Usuario).where(Usuario.usuario == conta_escritorio["usuario"]))
+        db.session.add(
+            HistoricoStatus(
+                solicitacao=solicitacao,
+                status_anterior="pendente",
+                status_novo="em_atendimento",
+                usuario=usuario,
+            )
+        )
+        db.session.commit()
+        solicitacao_id = solicitacao.id
+
+    detalhe = _html(client.get(f"/painel/solicitacoes/{solicitacao_id}"))
+    editar = _html(client.get(f"/painel/solicitacoes/{solicitacao_id}/editar"))
+    assert "Esta ordem já está em lançamento." in detalhe
+    assert "Esta ordem já está em lançamento." in editar
+
+
+def test_pesquisa_encontra_pelo_nome_do_solicitante(client, app, cliente_escritorio):
+    with app.app_context():
+        criar_solicitacao(solicitacao_limpa(placa="ABC1D23", responsavel_nome="José Almeida", chave_envio=str(uuid4())))
+        criar_solicitacao(solicitacao_limpa(placa="QWE4R56", responsavel_nome="Ana Costa", chave_envio=str(uuid4())))
+
+    por_nome = _html(client.get("/painel/?placa=Ana Costa"))
+    assert "QWE4R56" in por_nome
+    assert "ABC1D23" not in por_nome
+
+    sem_acento = _html(client.get("/painel/?placa=jose"))
+    assert "ABC1D23" in sem_acento
+    assert "QWE4R56" not in sem_acento
+
+
 def test_perfil_sem_permissao_recebe_403(client, app):
     with app.app_context():
         usuario = Usuario(nome="Visita", usuario="visita", perfil="visitante", ativo=True)

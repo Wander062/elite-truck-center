@@ -174,8 +174,21 @@ def aplicar_status(solicitacao_id):
     if usuario is None:
         abort(403)
     try:
-        alterar_status(solicitacao, mudanca["status"], usuario)
+        alterar_status(
+            solicitacao,
+            mudanca["status"],
+            usuario,
+            numero_ordem=request.form.get("numero_ordem"),
+        )
     except DadosInvalidos as exc:
+        if "numero_ordem" in exc.erros:
+            return render_template(
+                "painel/confirmar_status.html",
+                solicitacao=solicitacao,
+                status_novo=mudanca["status"],
+                erro_numero=exc.erros["numero_ordem"],
+                numero_informado=request.form.get("numero_ordem") or "",
+            ), 400
         session.pop(CHAVE_MUDANCA, None)
         flash(exc.erros.get("status", "Não foi possível alterar o status."), "erro")
         return redirect(url_for("painel.detalhe", solicitacao_id=solicitacao_id))

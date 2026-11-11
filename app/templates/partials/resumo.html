@@ -1,37 +1,46 @@
 {% macro resumo(registro) %}
 <article class="cartao">
-  <dl class="ficha">
-    <dt>{{ "Identificação" if registro.placa_fora_padrao else "Placa" }}</dt>
-    <dd>{{ registro.placa }}</dd>
-    <dt>Tipo</dt>
-    <dd>{{ registro.tipo_veiculo|rotulo_tipo }}</dd>
-    <dt>Marca</dt>
-    <dd>{{ registro.marca }}</dd>
-    <dt>Modelo</dt>
-    <dd>{{ registro.modelo }}</dd>
-    {% if registro.identificacao_adicional %}
-      <dt>Identificação adicional</dt>
-      <dd>{{ registro.identificacao_adicional }}</dd>
-    {% endif %}
-    <dt>Responsável</dt>
-    <dd>{{ registro.responsavel_nome }}</dd>
-    {% if registro.observacoes_gerais %}
-      <dt>Observações</dt>
-      <dd class="preservar">{{ registro.observacoes_gerais }}</dd>
-    {% endif %}
-  </dl>
-  <h2 class="h5 mt-4">Peças ({{ registro.itens|length }})</h2>
-  <div class="grade-pecas">
-    <div class="grade-pecas-cabeca">Peça</div>
-    <div class="grade-pecas-cabeca">Qtd.</div>
-    <div class="grade-pecas-cabeca">Unidade</div>
-    <div class="grade-pecas-cabeca">Observação</div>
-    {% for item in registro.itens %}
-      <div class="celula celula-inicio preservar" data-rotulo="Peça">{{ item.descricao }}</div>
-      <div class="celula" data-rotulo="Qtd.">{{ item.quantidade|quantidade }}</div>
-      <div class="celula" data-rotulo="Unidade">{{ item.unidade|unidade }}</div>
-      <div class="celula preservar" data-rotulo="Observação">{{ item.observacao or "—" }}</div>
-    {% endfor %}
-  </div>
+  <section class="resumo-bloco">
+    <h2 class="h5">Veículo</h2>
+    <dl class="ficha">
+      <dt>{{ "Identificação" if registro.placa_fora_padrao else "Placa" }}</dt>
+      <dd>{{ registro.placa }}</dd>
+      <dt>Tipo</dt>
+      <dd>{{ registro.tipo_veiculo|rotulo_tipo }}</dd>
+      <dt>Marca</dt>
+      <dd>{{ registro.marca }}</dd>
+      <dt>Modelo</dt>
+      <dd>{{ registro.modelo }}</dd>
+      {% if registro.identificacao_adicional %}
+        <dt>Identificação adicional</dt>
+        <dd>{{ registro.identificacao_adicional }}</dd>
+      {% endif %}
+    </dl>
+  </section>
+  <section class="resumo-bloco">
+    <h2 class="h5">Responsável</h2>
+    <p class="resumo-nome">{{ registro.responsavel_nome }}</p>
+  </section>
+  {% if registro.observacoes_gerais %}
+    <section class="resumo-bloco">
+      <h2 class="h5">Observações gerais</h2>
+      <p class="preservar mb-0">{{ registro.observacoes_gerais }}</p>
+    </section>
+  {% endif %}
+  <section class="resumo-bloco">
+    <h2 class="h5">Peças ({{ registro.itens|length }})</h2>
+    <div class="grade-pecas">
+      <div class="grade-pecas-cabeca">Peça</div>
+      <div class="grade-pecas-cabeca">Qtd.</div>
+      <div class="grade-pecas-cabeca">Unidade</div>
+      <div class="grade-pecas-cabeca">Observação</div>
+      {% for item in registro.itens %}
+        <div class="celula celula-inicio preservar" data-rotulo="Peça">{{ item.descricao }}</div>
+        <div class="celula" data-rotulo="Qtd.">{{ item.quantidade|quantidade }}</div>
+        <div class="celula" data-rotulo="Unidade">{{ item.unidade|unidade }}</div>
+        <div class="celula preservar" data-rotulo="Observação">{{ item.observacao or "—" }}</div>
+      {% endfor %}
+    </div>
+  </section>
 </article>
 {% endmacro %}

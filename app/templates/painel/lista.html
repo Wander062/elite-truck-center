@@ -13,7 +13,7 @@
         <h1>Pedidos de hoje</h1>
         <p class="resumo-fila">
           {% if pendentes == 0 %}
-            Nenhum pedido de hoje esperando lançamento.
+            Nenhum pedido de hoje em aberto.
           {% elif pendentes == 1 %}
             1 pedido de hoje em aberto.
           {% else %}
@@ -34,8 +34,8 @@
     {% if filtros.historico %}<input type="hidden" name="historico" value="1">{% endif %}
     <div class="row g-3 align-items-end">
       <div class="col-12 col-md-4">
-        <label class="form-label" for="filtro-placa">Buscar pela placa ou pelo número</label>
-        <input class="form-control" id="filtro-placa" name="placa" value="{{ filtros.placa }}" autocomplete="off" placeholder="Placa ou SOL-000001">
+        <label class="form-label" for="filtro-placa">Buscar</label>
+        <input class="form-control" id="filtro-placa" name="placa" value="{{ filtros.placa }}" autocomplete="off" placeholder="Placa, número ou nome">
       </div>
       <div class="col-6 col-md-2">
         <label class="form-label" for="filtro-de">Do dia</label>
@@ -87,13 +87,18 @@
     <div class="lista-pedidos">
       {% for solicitacao in paginacao.items %}
         <a class="pedido" href="{{ url_for('painel.detalhe', solicitacao_id=solicitacao.id) }}">
+          <span class="pedido-protocolo">{{ solicitacao.protocolo }}</span>
           <span class="pedido-topo">
             <strong class="pedido-placa">{{ solicitacao.placa }}</strong>
             <span class="selo selo-{{ solicitacao.status }}">{{ solicitacao.status|rotulo_status }}</span>
           </span>
-          <span class="pedido-linha">{{ solicitacao.protocolo }} · {{ solicitacao.criado_em|data_hora }}</span>
-          <span class="pedido-linha">{{ solicitacao.modelo }} · {{ solicitacao.responsavel_nome }}</span>
-          <span class="pedido-linha">{{ contagens.get(solicitacao.id, 0)|contagem }}</span>
+          <span class="pedido-linha">{{ solicitacao.tipo_veiculo|rotulo_tipo }} · {{ solicitacao.modelo }}</span>
+          <span class="pedido-linha">{{ solicitacao.responsavel_nome }} · {{ solicitacao.criado_em|data_hora }}</span>
+          <span class="pedido-linha">
+            {% if solicitacao.status == 'em_atendimento' %}Em lançamento · {% endif %}
+            {% if solicitacao.numero_ordem %}Ordem {{ solicitacao.numero_ordem }} · {% endif %}
+            {{ contagens.get(solicitacao.id, 0)|contagem }}
+          </span>
           <span class="pedido-abrir">Abrir pedido</span>
         </a>
       {% endfor %}

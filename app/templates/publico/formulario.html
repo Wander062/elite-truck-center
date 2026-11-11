@@ -11,7 +11,7 @@
     <div class="mb-3">
       <label class="d-block">
         <span class="form-label">Descrição da peça</span>
-        <input class="form-control form-control-lg{% if erros_linha.get('descricao') %} is-invalid{% endif %}" name="item_descricao" value="{{ item.descricao }}" maxlength="200" autocomplete="off">
+        <input class="form-control form-control-lg peca-descricao{% if erros_linha.get('descricao') %} is-invalid{% endif %}" name="item_descricao" value="{{ item.descricao }}" maxlength="200" autocomplete="off" list="descricoes-frequentes" enterkeyhint="next">
       </label>
       {% if erros_linha.get('descricao') %}<p class="erro-campo">{{ erros_linha.descricao }}</p>{% endif %}
     </div>
@@ -19,7 +19,7 @@
       <div class="col-6">
         <label class="d-block">
           <span class="form-label">Quantidade</span>
-          <input class="form-control form-control-lg{% if erros_linha.get('quantidade') %} is-invalid{% endif %}" name="item_quantidade" value="{{ item.quantidade }}" inputmode="decimal" maxlength="9" autocomplete="off">
+          <input class="form-control form-control-lg{% if erros_linha.get('quantidade') %} is-invalid{% endif %}" name="item_quantidade" value="{{ item.quantidade }}" inputmode="decimal" maxlength="9" autocomplete="off" enterkeyhint="next">
         </label>
         {% if erros_linha.get('quantidade') %}<p class="erro-campo">{{ erros_linha.quantidade }}</p>{% endif %}
       </div>
@@ -49,13 +49,13 @@
 {% block topo %}{% include "partials/topo_publico.html" %}{% endblock %}
 {% block rodape %}{% include "partials/rodape_publico.html" %}{% endblock %}
 {% block conteudo %}
-  <p class="intro">Informe o veículo e as peças.</p>
-  <nav class="etapas" aria-label="Etapas da solicitação">
-    <a href="#titulo-veiculo">1. Veículo</a>
-    <a href="#titulo-responsavel">2. Quem</a>
-    <a href="#titulo-pecas">3. Peças</a>
+  <nav class="progresso" aria-label="Etapas da solicitação">
+    <button type="button" data-ir="1" aria-current="step">1. Veículo</button>
+    <button type="button" data-ir="2">2. Quem</button>
+    <button type="button" data-ir="3">3. Peças</button>
     <span>4. Revisão</span>
   </nav>
+  <div class="trilha" aria-hidden="true"><span id="trilha-preenchida"></span></div>
   {% if erros %}
     <div class="alert alert-danger" role="alert">
       <strong>Corrija os campos indicados antes de continuar.</strong>
@@ -70,7 +70,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="chave_envio" value="{{ dados.chave_envio }}">
 
-    <section class="bloco" aria-labelledby="titulo-veiculo">
+    <section class="bloco etapa-painel ativa" data-etapa="1" aria-labelledby="titulo-veiculo">
       <div class="bloco-titulo">
         <span class="indice">1</span>
         <div>
@@ -79,7 +79,7 @@
       </div>
       <div class="mb-3">
         <label class="form-label" for="placa">Placa ou identificação</label>
-        <input class="form-control form-control-lg{% if erros.get('placa') %} is-invalid{% endif %}" id="placa" name="placa" value="{{ dados.placa }}" maxlength="30" required autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC1D23" {% if erros.get('placa') %}aria-invalid="true" aria-describedby="erro-placa"{% else %}aria-describedby="ajuda-placa"{% endif %}>
+        <input class="form-control form-control-lg{% if erros.get('placa') %} is-invalid{% endif %}" id="placa" name="placa" value="{{ dados.placa }}" maxlength="30" required autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABC1D23" enterkeyhint="next" {% if erros.get('placa') %}aria-invalid="true" aria-describedby="erro-placa"{% else %}aria-describedby="ajuda-placa"{% endif %}>
         {% if erros.get('placa') %}
           <p class="erro-campo" id="erro-placa">{{ erros.placa }}</p>
         {% endif %}
@@ -122,7 +122,7 @@
       </div>
     </section>
 
-    <section class="bloco" aria-labelledby="titulo-responsavel">
+    <section class="bloco etapa-painel" data-etapa="2" aria-labelledby="titulo-responsavel">
       <div class="bloco-titulo">
         <span class="indice">2</span>
         <div>
@@ -130,18 +130,19 @@
         </div>
       </div>
       <label class="form-label" for="responsavel_nome">Nome</label>
-      <input class="form-control form-control-lg{% if erros.get('responsavel_nome') %} is-invalid{% endif %}" id="responsavel_nome" name="responsavel_nome" value="{{ dados.responsavel_nome }}" maxlength="120" required autocomplete="name" list="nomes-frequentes">
+      <input class="form-control form-control-lg{% if erros.get('responsavel_nome') %} is-invalid{% endif %}" id="responsavel_nome" name="responsavel_nome" value="{{ dados.responsavel_nome }}" maxlength="120" required autocomplete="name" autocapitalize="words" enterkeyhint="next" list="nomes-frequentes">
       <datalist id="nomes-frequentes"></datalist>
       {% if erros.get('responsavel_nome') %}<p class="erro-campo">{{ erros.responsavel_nome }}</p>{% endif %}
     </section>
 
-    <section class="bloco" aria-labelledby="titulo-pecas">
+    <section class="bloco etapa-painel" data-etapa="3" aria-labelledby="titulo-pecas">
       <div class="bloco-titulo">
         <span class="indice">3</span>
         <div>
           <h2 id="titulo-pecas">Peças</h2>
         </div>
       </div>
+      <p id="contagem-pecas" class="contagem-pecas">1 peça</p>
       {% if erros.get('itens') %}
         <p class="erro-campo" role="alert">{{ erros.itens }}</p>
       {% endif %}
@@ -151,25 +152,24 @@
           {{ campos_peca(item, erros_linha) }}
         {% endfor %}
       </div>
+      <div id="sugestoes-pecas" class="sugestoes-pecas"></div>
       <button type="button" id="adicionar-peca" class="btn-adicionar js-somente">Adicionar peça</button>
+      <datalist id="descricoes-frequentes"></datalist>
       <p id="limite-pecas" class="form-text" hidden>Limite de 30 peças por solicitação.</p>
       <noscript>
         <p class="alert alert-warning mt-3">Para incluir várias peças nesta mesma solicitação, ative o JavaScript do navegador.</p>
       </noscript>
-    </section>
-
-    <section class="bloco" aria-labelledby="titulo-observacoes">
-      <div class="bloco-titulo">
-        <span class="indice">4</span>
-        <div>
-          <h2 id="titulo-observacoes">Observações</h2>
-        </div>
+      <div class="observacao-geral">
+        <label class="form-label" for="observacoes_gerais">Observações gerais</label>
+        <textarea class="form-control{% if erros.get('observacoes_gerais') %} is-invalid{% endif %}" id="observacoes_gerais" name="observacoes_gerais" rows="2" maxlength="2000">{{ dados.observacoes_gerais }}</textarea>
+        {% if erros.get('observacoes_gerais') %}<p class="erro-campo">{{ erros.observacoes_gerais }}</p>{% endif %}
       </div>
-      <label class="visually-hidden" for="observacoes_gerais">Observações gerais</label>
-      <textarea class="form-control{% if erros.get('observacoes_gerais') %} is-invalid{% endif %}" id="observacoes_gerais" name="observacoes_gerais" rows="4" maxlength="2000">{{ dados.observacoes_gerais }}</textarea>
-      {% if erros.get('observacoes_gerais') %}<p class="erro-campo">{{ erros.observacoes_gerais }}</p>{% endif %}
     </section>
 
+    <div class="barra-passos js-somente">
+      <button type="button" class="btn btn-outline-secondary btn-lg" id="passo-voltar" hidden>Voltar</button>
+      <button type="button" class="btn btn-primary btn-lg" id="passo-continuar">Continuar</button>
+    </div>
     <div class="barra-envio">
       <button type="submit" class="btn btn-primary btn-lg btn-enviar" id="enviar" data-aguarde="Enviando...">Continuar para revisão</button>
     </div>

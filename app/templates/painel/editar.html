@@ -4,6 +4,9 @@
 {% block painel %}
   <p class="mb-2"><a class="voltar" href="{{ url_for('painel.detalhe', solicitacao_id=solicitacao.id) }}">Voltar ao pedido</a></p>
   <h1>Corrigir {{ solicitacao.protocolo }}</h1>
+  {% if solicitacao.status == 'em_atendimento' %}
+    <p class="aviso-sistema">Esta ordem já está em lançamento.</p>
+  {% endif %}
   <p class="resumo-fila">Salvar altera só {{ solicitacao.protocolo }}.</p>
   {% if erros %}
     <div class="alert alert-danger" role="alert">

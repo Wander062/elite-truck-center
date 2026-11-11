@@ -16,6 +16,7 @@ class Solicitacao(db.Model):
     responsavel_nome = db.Column(db.String(120), nullable=False)
     observacoes_gerais = db.Column(db.Text)
     status = db.Column(db.String(32), nullable=False, default="pendente", index=True)
+    numero_ordem = db.Column(db.String(40))
     criado_em = db.Column(db.DateTime, nullable=False, default=agora_utc, index=True)
     atualizado_em = db.Column(db.DateTime, nullable=False, default=agora_utc, onupdate=agora_utc)
 

@@ -81,9 +81,35 @@ def obter_solicitacao(solicitacao_id):
     ).first()
 
 
+_ACENTOS = (
+    ("Á", "A"), ("À", "A"), ("Â", "A"), ("Ã", "A"),
+    ("É", "E"), ("Ê", "E"), ("Í", "I"),
+    ("Ó", "O"), ("Ô", "O"), ("Õ", "O"), ("Ú", "U"), ("Ç", "C"),
+    ("á", "A"), ("à", "A"), ("â", "A"), ("ã", "A"),
+    ("é", "E"), ("ê", "E"), ("í", "I"),
+    ("ó", "O"), ("ô", "O"), ("õ", "O"), ("ú", "U"), ("ç", "C"),
+)
+
+
+def _termo_nome(texto):
+    bruto = str(texto or "")
+    for origem, destino in _ACENTOS:
+        bruto = bruto.replace(origem, destino)
+    return " ".join(bruto.upper().split())
+
+
+def _coluna_nome():
+    coluna = Solicitacao.responsavel_nome
+    for origem, destino in _ACENTOS:
+        coluna = func.replace(coluna, origem, destino)
+    return func.upper(coluna)
+
+
 def consultar_solicitacoes(placa, inicio_utc, fim_exclusivo_utc, status, pagina, excluir_intervalo=None):
     consulta = db.select(Solicitacao)
     termo = re.sub(r"[^A-Z0-9]", "", (placa or "").upper())
+    nome_termo = _termo_nome(placa)
+    condicoes = []
     if termo:
         coluna = func.upper(Solicitacao.placa)
         for caractere in ("-", " ", ".", "/"):
@@ -93,7 +119,11 @@ def consultar_solicitacoes(placa, inicio_utc, fim_exclusivo_utc, status, pagina,
             numero = int(re.sub(r"\D", "", termo) or "0")
             if 1 <= numero <= 1_000_000_000:
                 condicao = or_(condicao, Solicitacao.id == numero)
-        consulta = consulta.where(condicao)
+        condicoes.append(condicao)
+    if len(nome_termo) >= 3:
+        condicoes.append(_coluna_nome().contains(nome_termo))
+    if condicoes:
+        consulta = consulta.where(or_(*condicoes))
     if status:
         consulta = consulta.where(Solicitacao.status == status)
     if inicio_utc is not None:
@@ -204,15 +234,31 @@ def atualizar_solicitacao(solicitacao, dados, versao):
     return solicitacao
 
 
-def alterar_status(solicitacao, novo_status, usuario):
+def numero_ordem_valido(valor):
+    texto = re.sub(r"\s+", " ", str(valor or "").strip())
+    if not texto or len(texto) > 40:
+        return None
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 ./-]*", texto):
+        return None
+    return texto
+
+
+def alterar_status(solicitacao, novo_status, usuario, numero_ordem=None):
     from app.erros import DadosInvalidos
 
     if novo_status not in STATUS_VALIDOS:
         raise DadosInvalidos({"status": "Status inválido."})
     if novo_status == solicitacao.status:
         raise DadosInvalidos({"status": "A solicitação já está com esse status."})
+    numero = None
+    if novo_status == "concluida":
+        numero = numero_ordem_valido(numero_ordem)
+        if numero is None:
+            raise DadosInvalidos({"numero_ordem": "Informe o número gerado no outro sistema."})
     anterior = solicitacao.status
     solicitacao.status = novo_status
+    if numero is not None:
+        solicitacao.numero_ordem = numero
     solicitacao.atualizado_em = agora_utc()
     db.session.add(
         HistoricoStatus(
